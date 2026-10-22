@@ -126,6 +126,10 @@ h2{font-size:clamp(22px,4vw,30px);text-transform:uppercase;letter-spacing:.04em}
 .pill::before{content:"";width:9px;height:9px;flex:none;background:var(--dry)}
 .pill.go{color:var(--fg)} .pill.go::before{background:var(--go)}
 .pill.maybe{color:var(--fg)} .pill.maybe::before{background:var(--maybe)}
+.dstat{display:flex;flex-direction:column;gap:6px}
+.bigpct{font-family:var(--f-display);font-size:40px;line-height:.95;color:var(--muted);font-variant-numeric:tabular-nums}
+.bigpct small{font-size:.5em;margin-left:2px;vertical-align:top;position:relative;top:.15em}
+.bigpct.go{color:var(--go)} .bigpct.maybe{color:var(--maybe)}
 .bars{display:flex;align-items:end;gap:3px;height:40px}
 .bars .b{flex:1;min-width:6px;max-width:24px;display:flex;flex-direction:column;justify-content:end;align-items:center;gap:3px;height:100%}
 .bars .b i{display:block;width:100%;background:var(--fg);min-height:1px}
@@ -177,6 +181,7 @@ dialog::backdrop{background:rgba(0,0,0,.7)}
 
 @media (max-width:640px){
   .day{grid-template-columns:1fr auto;gap:10px 12px}
+  .dstat{align-items:flex-end}
   .day .bars{grid-column:1/-1}
   .day .dnums{grid-column:1/-1;grid-template-columns:repeat(4,auto);justify-content:start}
   .meet{grid-template-columns:1fr;gap:18px}
@@ -449,9 +454,9 @@ function renderForecast(){
     if(e.windy) flags.push("ветер до "+Math.round(e.wMax)+" м/с");
     return '<div class="day'+(e.isToday?" today":"")+(e.far?" far":"")+'">'+
       '<div class="dname">'+(e.isToday?"Сегодня":ruDay(e.date).split(",")[0])+'<small>'+ruDay(e.date).split(", ").slice(-1)[0]+'</small></div>'+
-      '<div><span class="pill '+e.status+'">'+LABEL[e.status]+'</span></div>'+
+      '<div class="dstat"><span class="pill '+e.status+'">'+LABEL[e.status]+'</span><div class="bigpct '+e.status+'">'+e.pct+'<small>%</small></div></div>'+
       '<div class="bars" aria-label="Осадки по часам с 17 до 23">'+bars+'</div>'+
-      '<div class="dnums"><span>шанс</span><b>'+e.pct+'%</b><span>вода</span><b>'+e.wet.toFixed(1)+' мм</b><span>модели</span><b>'+e.dWet+'/'+e.dAll+'</b>'+(e.eAll?'<span>ансамбль</span><b>'+e.eWet+'/'+e.eAll+'</b>':'')+'<span>темп.</span><b>'+(e.tMin==null?"—":Math.round(e.tMin)+'°')+'</b></div>'+
+      '<div class="dnums"><span>вода</span><b>'+e.wet.toFixed(1)+' мм</b><span>модели</span><b>'+e.dWet+'/'+e.dAll+'</b>'+(e.eAll?'<span>ансамбль</span><b>'+e.eWet+'/'+e.eAll+'</b>':'')+'<span>темп.</span><b>'+(e.tMin==null?"—":Math.round(e.tMin)+'°')+'</b></div>'+
       (flags.length?'<div class="flags">'+flags.map(f=>'<span>'+f+'</span>').join("")+'</div>':'')+
     '</div>';
   }).join("");
