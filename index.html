@@ -229,7 +229,7 @@ body.locked{padding-bottom:0}
         <div class="u"><div class="n" data-u="m"><span>0</span><span>0</span></div><small>минуты</small></div><div class="sep">:</div>
         <div class="u"><div class="n" data-u="s"><span>0</span><span>0</span></div><small>секунды</small></div>
       </div>
-      <div class="timer-label" id="timerLabel">до первого дождя на споте</div>
+      <div class="timer-label" id="timerLabel">до мокрого вечера на споте</div>
       <form class="gate" id="gate" autocomplete="off">
         <label for="code">Вход для своих</label>
         <div class="gate-row">
@@ -287,7 +287,7 @@ body.locked{padding-bottom:0}
         <li>Ансамбли ECMWF, GFS, ICON и GEM — это десятки расчётов одной модели с небольшими отклонениями. Доля расчётов, где вечер получается мокрым, и есть честная вероятность.</li>
         <li>Асфальт считается по балансу воды: дождь добавляет воду, испарение её убирает. Испарение берётся из прогноза и учитывает температуру, ветер, влажность и солнце. Ночью в безветрие асфальт после дневного дождя остаётся мокрым, в жару и ветер сохнет быстро.</li>
         <li>Вечер мокрый, если вода на асфальте держится хотя бы 2 часа из окна 20:00–00:00. Итоговый шанс — 65% ансамбль и 35% обычные модели. «Едем» — от 60%, «Может быть» — от 30%.</li>
-        <li>Таймер в шапке показывает ближайший час, когда дождь на споте вероятнее, чем нет (от 50%). Дальше пяти дней прогноз осадков заметно менее точный.</li>
+        <li>Таймер в шапке считает до 20:00 ближайшего вечера со статусом «Мокро · едем» (шанс от 60%). Дальше пяти дней прогноз осадков заметно менее точный.</li>
         <li>Погодные данные: <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a>, лицензия CC BY 4.0.</li>
       </ul>
     </details>
@@ -501,14 +501,17 @@ function renderHero(){
 }
 
 /* ---------- countdown to first rain ---------- */
-let rainAt=null, rainKnown=false, rainP=0;
-function setRainFrom(hourly){
-  if(!hourly) return;
-  rainKnown=true; rainAt=null;
-  for(const x of hourly){
-    const t=new Date(x.t+":00+03:00");
-    if(t.getTime()+3600e3<=Date.now()) continue;
-    if(x.p>=0.5){ rainAt=t; rainP=Math.round(x.p*100); break; }
+let rainAt=null, rainEnd=null, rainKnown=false, rainP=0;
+/* countdown to 20:00 of the first evening with status "go" (wet asphalt ≥60%) */
+function setRainFrom(evs){
+  if(!evs) return;
+  rainKnown=true; rainAt=null; rainEnd=null;
+  for(const e of evs){
+    if(e.status!=="go") continue;
+    const start=new Date(e.date+"T"+String(W0).padStart(2,"0")+":00:00+03:00");
+    const end=new Date(start.getTime()+W_LEN*3600e3);
+    if(end<=Date.now()) continue;
+    rainAt=start; rainEnd=end; rainP=e.pct; break;
   }
   tick();
 }
@@ -517,14 +520,14 @@ function setUnit(u,v){ const el=document.querySelector('.timer .n[data-u="'+u+'"
 function tick(){
   const tm=$("timer"), lab=$("timerLabel");
   if(!rainKnown){ return; }
-  if(!rainAt){ ["d","h","m","s"].forEach(u=>setUnit(u,0)); tm.classList.remove("now"); lab.innerHTML="Уверенного дождя в ближайшие 14 дней не видно"; return; }
+  if(!rainAt){ ["d","h","m","s"].forEach(u=>setUnit(u,0)); tm.classList.remove("now"); lab.innerHTML="Мокрых вечеров в ближайшие 14 дней не видно"; return; }
   let ms=rainAt-Date.now();
-  if(ms<=0){ ["d","h","m","s"].forEach(u=>setUnit(u,0)); tm.classList.add("now"); lab.innerHTML="<b>Дождь идёт сейчас</b> — проверь прогноз на вечер"; return; }
+  if(ms<=0){ ["d","h","m","s"].forEach(u=>setUnit(u,0)); tm.classList.add("now"); lab.innerHTML="<b>Мокро прямо сейчас · шанс "+rainP+"%</b><br>окно до 00:00"; return; }
   tm.classList.remove("now");
   const s=Math.floor(ms/1000);
   setUnit("d",Math.floor(s/86400)); setUnit("h",Math.floor(s%86400/3600)); setUnit("m",Math.floor(s%3600/60)); setUnit("s",s%60);
   const ds=new Intl.DateTimeFormat("ru-RU",{timeZone:TZ,weekday:"short",day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}).format(rainAt).replace(/\./g,"");
-  lab.innerHTML="до первого дождя на споте<br><b>"+ds+" · шанс "+rainP+"%</b>";
+  lab.innerHTML="до мокрого вечера на споте<br><b>"+ds+" · шанс "+rainP+"%</b>";
 }
 setInterval(tick,1000);
 /* keep the big title and timer inside the screen whatever font loads */
@@ -554,7 +557,7 @@ const getWithFallback=(url,ms)=>getJSON(url,ms).then(j=>j||getJSON(url.replace("
 function stamp(){ const n=nowMsk(); return String(n.hour).padStart(2,"0")+":"+String(n.min).padStart(2,"0"); }
 function applyBundle(b){
   const a=analyze(b); if(!a||!a.length) return false;
-  evenings=a; liveOk=true; setRainFrom(a.hourly);
+  evenings=a; liveOk=true; setRainFrom(a);
   const m=bundleMeta;
   fcMeta="Open-Meteo: "+m.det+" "+(m.det===1?"модель":m.det<5?"модели":"моделей")+(m.members?" и "+m.members+" ансамблевых расчётов ("+m.ens+" ансамбля)":"")+" · обновлено в "+stamp()+" МСК";
   renderForecast(); return true;
@@ -573,7 +576,7 @@ async function loadLive(){
 function useStored(doc){
   if(liveOk||!doc||!doc.data) return;
   const a=analyze({main:doc.data,det:[],ens:[]}); if(!a) return;
-  evenings=a; setRainFrom(a.hourly);
+  evenings=a; setRainFrom(a);
   fcMeta="Прогноз Open-Meteo"; renderForecast();
 }
 
