@@ -1,0 +1,794 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>coffeeGaysClub · Medvedovka</title>
+<meta name="description" content="Дрифт-компания на пятёрках: прогноз мокрого асфальта на Медведовке после 20:00, сборы и экипаж.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Manrope:wght@400;500;600;700;800&display=swap">
+<style>
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}
+/* Layout: strict single column on near-black. Spot photo as the only image-led moment; everything else is hairlines, condensed caps and mono numbers. */
+:root{
+  --bg:#0b0c0e;          /* night */
+  --surface:#111317;     /* panels */
+  --line:#24272d;        /* hairlines */
+  --fg:#ececea;          /* text */
+  --muted:#8b9099;       /* secondary */
+  --lamp:#e9c27b;        /* streetlight accent, used sparingly */
+  --go:#7bd89f; --maybe:#e4c35a; --dry:#6d727b;
+  --f-display:"Anton","Impact","Arial Narrow",sans-serif;   /* tall condensed caps, MOVAULT / NOTHING */
+  --f-body:"Manrope",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; /* geometric, Mograph / Olline */
+  --f-mono:"Manrope",system-ui,sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{background:var(--bg)}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.55;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 64px}
+.wrap{max-width:960px;margin:0 auto;display:flex;flex-direction:column;gap:72px}
+a{color:var(--fg)}
+button,input,textarea,select{font:inherit;color:inherit}
+:focus-visible{outline:1px solid var(--lamp);outline-offset:3px}
+h1,h2,h3{font-family:var(--f-display);margin:0;font-weight:600;text-wrap:balance}
+h2{font-size:clamp(22px,4vw,30px);text-transform:uppercase;letter-spacing:.04em}
+.eyebrow{font-family:var(--f-mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.sec-head{display:flex;align-items:end;justify-content:space-between;gap:16px;flex-wrap:wrap;padding-bottom:14px;margin-bottom:0;border-bottom:1px solid var(--fg)}
+.sec-head>div{display:flex;flex-direction:column;gap:6px}
+.btn{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:transparent;padding:9px 16px;border-radius:0;cursor:pointer;text-decoration:none;color:var(--fg);font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+.btn:hover{border-color:var(--fg)}
+.btn.primary{background:var(--fg);border-color:var(--fg);color:var(--bg)}
+.btn.primary:hover{background:var(--lamp);border-color:var(--lamp)}
+.btn.ghost{border-color:transparent;padding-inline:0}
+.btn.ghost:hover{border-color:transparent;color:var(--lamp)}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+
+/* HERO */
+.hero{position:relative;margin-inline:calc(-1 * max(16px,env(safe-area-inset-left,0px)));
+  background:#05070b url("photos/spot.jpg") center 60%/cover no-repeat}
+.hero::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(5,7,11,.6) 0%,rgba(5,7,11,.35) 45%,rgba(11,12,14,.95) 100%)}
+.hero-in{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:22px max(16px,env(safe-area-inset-left,0px)) 56px;display:flex;flex-direction:column;align-items:center;gap:clamp(90px,16vw,170px)}
+.crew{align-self:stretch;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase}
+.crew-name{text-transform:none;letter-spacing:.06em;font-size:14px}
+.crew-name span{color:var(--lamp)}
+.crew a{color:var(--fg);text-decoration:none;border-bottom:1px solid rgba(236,236,234,.4);font-variant-numeric:tabular-nums}
+.crew a:hover{border-color:var(--fg)}
+.hero-center{min-width:0;display:flex;flex-direction:column;align-items:center;text-align:center;gap:22px;width:100%}
+.spot-name{font-family:var(--f-display);font-weight:400;font-size:clamp(56px,16vw,200px);white-space:nowrap;line-height:.86;letter-spacing:.005em;text-transform:uppercase;margin:0}
+.timer{display:flex;white-space:nowrap;align-items:flex-start;justify-content:center;gap:clamp(6px,1.6vw,14px);font-family:var(--f-display);font-size:clamp(40px,9vw,96px);line-height:1}
+.timer .u{display:flex;flex-direction:column;align-items:center;gap:8px}
+.timer .n{display:flex}
+.timer .n span{display:inline-block;width:.56em;text-align:center}
+.timer .sep{opacity:.45}
+.timer small{font-family:var(--f-body);font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+.timer-label{line-height:1.7;font-size:13px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.timer-label b{color:var(--lamp);font-weight:700}
+.timer.now{color:var(--lamp)}
+
+/* TONIGHT */
+.tonight{display:flex;flex-direction:column;gap:12px;padding-top:8px}
+.verdict .big,.tonight .big{font-family:var(--f-body);font-weight:800;font-size:clamp(30px,6vw,52px);line-height:1;letter-spacing:-.02em;display:flex;align-items:center;gap:16px}
+.tonight .big::before{content:"";width:16px;height:16px;flex:none;background:var(--dry)}
+.tonight .big.go::before{background:var(--go)} .tonight .big.maybe::before{background:var(--maybe)} .tonight .big.wait::before{background:var(--line)}
+.tonight p{margin:0;color:rgba(236,236,234,.78);font-size:16px;max-width:60ch}
+.tonight p b{color:var(--fg);font-weight:700}
+.hero-stats{display:flex;flex-wrap:wrap;margin-top:6px;border-top:1px solid var(--line)}
+.chip{display:inline-flex;align-items:baseline;gap:8px;padding:12px 24px 0 0;font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;font-variant-numeric:tabular-nums}
+.chip b,.countdown{color:var(--fg);font-weight:700}
+.chip .dot{display:none}
+.warn,.chip.warn{color:var(--maybe)}
+
+/* PANELS */
+.panel{background:transparent;border:0;border-bottom:1px solid var(--line);padding:24px 0}
+.meet{display:grid;grid-template-columns:auto 1fr;gap:28px;align-items:start}
+.meet-date{min-width:96px;border-left:2px solid var(--lamp);padding-left:16px}
+.meet-date .m{font-family:var(--f-mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--lamp)}
+.meet-date .d{font-family:var(--f-display);font-weight:600;font-size:56px;line-height:1}
+.meet-date .w{font-family:var(--f-mono);font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+.meet-body{display:flex;flex-direction:column;gap:14px;min-width:0}
+.meet-body h3{font-size:22px;text-transform:uppercase;letter-spacing:.03em}
+.meet-body h3 span{color:var(--lamp)!important}
+.meet-note{margin:0;white-space:pre-wrap;overflow-wrap:anywhere;color:var(--muted);max-width:62ch}
+.meet-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.going{display:flex;flex-wrap:wrap;gap:6px}
+.going span{font-size:13px;padding:3px 10px;border:1px solid var(--line)}
+.other-meets{margin:20px 0 0;padding:16px 0 0;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:8px;list-style:none}
+.other-meets li{display:flex;gap:14px;align-items:baseline;flex-wrap:wrap;font-size:14px}
+.other-meets .mono{color:var(--fg)!important}
+.empty{color:var(--muted);margin:0;max-width:62ch}
+.empty b{color:var(--fg)!important}
+.confirm{display:inline-flex;gap:8px;align-items:center;font-size:13px;color:var(--muted)}
+
+/* FORM */
+.form{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-top:18px}
+.form label{display:flex;flex-direction:column;gap:6px;font-size:11px;color:var(--muted);font-family:var(--f-mono);letter-spacing:.1em;text-transform:uppercase}
+.form .full{grid-column:1/-1}
+.form input,.form textarea,.form select{background:var(--bg);border:1px solid var(--line);border-radius:0;padding:10px 12px;font-family:var(--f-body);font-size:15px;text-transform:none;letter-spacing:0;color:var(--fg);width:100%}
+.form textarea{min-height:84px;resize:vertical}
+.form-actions{grid-column:1/-1;display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.msg{font-size:13px;color:var(--muted)}
+.msg.err{color:var(--maybe)}
+
+/* FORECAST */
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-family:var(--f-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:7px}
+.legend i{width:9px;height:9px;display:inline-block}
+.days{display:flex;flex-direction:column}
+.day{display:grid;grid-template-columns:110px 130px minmax(0,1fr) 150px;gap:18px;align-items:center;padding:14px 0;border-bottom:1px solid var(--line)}
+.day.today .dname{color:var(--lamp)}
+.day.far{opacity:.62}
+.day .dname{font-family:var(--f-display);font-weight:600;font-size:17px;text-transform:uppercase;letter-spacing:.03em}
+.day .dname small{display:block;font-family:var(--f-mono);font-weight:400;font-size:11px;color:var(--muted);letter-spacing:.06em}
+.pill{display:inline-flex;align-items:center;gap:8px;font-family:var(--f-mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;white-space:nowrap;color:var(--muted)}
+.pill::before{content:"";width:9px;height:9px;flex:none;background:var(--dry)}
+.pill.go{color:var(--fg)} .pill.go::before{background:var(--go)}
+.pill.maybe{color:var(--fg)} .pill.maybe::before{background:var(--maybe)}
+.bars{display:flex;align-items:end;gap:3px;height:40px}
+.bars .b{flex:1;min-width:6px;max-width:24px;display:flex;flex-direction:column;justify-content:end;align-items:center;gap:3px;height:100%}
+.bars .b i{display:block;width:100%;background:var(--fg);min-height:1px}
+.bars .b.pre i{background:var(--muted);opacity:.6}
+.bars .b.empty i{background:var(--line)}
+.bars .b em{font-style:normal;font-family:var(--f-mono);font-size:9px;color:var(--muted)}
+.bars .gap{width:8px;align-self:stretch;border-left:1px dashed var(--line);margin-left:4px}
+.dnums{font-family:var(--f-mono);font-size:11px;color:var(--muted);display:grid;grid-template-columns:auto auto;gap:2px 12px;font-variant-numeric:tabular-nums;letter-spacing:.02em}
+.dnums b{color:var(--fg);font-weight:500}
+.flags{grid-column:1/-1;display:flex;gap:14px;flex-wrap:wrap;margin-top:-6px}
+.flags span{font-size:11px;color:var(--maybe);font-family:var(--f-mono);letter-spacing:.04em;text-transform:uppercase}
+.fsrc{margin-top:14px;font-family:var(--f-mono);font-size:11px;letter-spacing:.04em;color:var(--muted);display:flex;gap:12px;flex-wrap:wrap;justify-content:space-between}
+.fsrc a{color:var(--fg)}
+.fstate{padding:28px 0;display:flex;flex-direction:column;gap:10px;border-bottom:1px solid var(--line)}
+.fstate p{margin:0;color:var(--muted);max-width:62ch}
+.method{margin-top:18px;font-size:14px;color:var(--muted)}
+.method summary{cursor:pointer;color:var(--fg);font-family:var(--f-mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase}
+.method ul{margin:12px 0 0;padding-left:18px;display:flex;flex-direction:column;gap:6px;max-width:70ch}
+
+/* CREW */
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1px;padding:1px;margin-top:24px}
+.card{background:var(--bg);display:flex;flex-direction:column;box-shadow:0 0 0 1px var(--line)}
+.photo{aspect-ratio:16/10;max-width:100%;background:var(--surface);position:relative;display:flex;align-items:center;justify-content:center;color:var(--muted);font-family:var(--f-display);font-weight:600;font-size:36px}
+.photo img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:saturate(.9)}
+.plate{position:absolute;left:12px;bottom:12px;display:inline-flex;align-items:stretch;background:#f4f4f2;color:#111;border:2px solid #111;border-radius:4px;font-family:var(--f-mono);font-weight:600;font-size:13px;line-height:1;overflow:hidden}
+.plate .num{padding:5px 8px;letter-spacing:.06em}
+.plate .reg{border-left:2px solid #111;padding:2px 5px;font-size:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px}
+.plate .reg small{font-size:6px}
+.card-body{padding:18px 18px 20px;display:flex;flex-direction:column;gap:12px;flex:1}
+.who{display:flex;flex-direction:column;gap:2px}
+.who h3{font-size:20px;text-transform:uppercase;letter-spacing:.03em}
+.who .nick{font-family:var(--f-mono);font-size:11px;letter-spacing:.08em;color:var(--lamp);order:-1;text-transform:uppercase}
+.car{font-family:var(--f-mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--fg)}
+.car .msg{color:var(--muted)}
+.specs{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;margin:0;font-size:13px;border-top:1px solid var(--line);padding-top:12px}
+.specs dt{font-family:var(--f-mono);color:var(--muted);font-size:10px;letter-spacing:.1em;text-transform:uppercase;padding-top:3px}
+.specs dd{margin:0;overflow-wrap:anywhere}
+.about{margin:0;color:var(--muted);font-size:14px;white-space:pre-wrap;overflow-wrap:anywhere}
+.card-actions{display:flex;gap:8px;margin-top:auto;padding-top:4px;flex-wrap:wrap}
+.card-actions .btn{padding:6px 12px;font-size:11px}
+.crew-empty{border:1px solid var(--line);padding:28px;display:flex;flex-direction:column;gap:12px;align-items:flex-start;margin-top:24px}
+dialog{background:var(--surface);color:var(--fg);border:1px solid var(--line);border-radius:0;padding:22px;width:min(640px,calc(100vw - 32px));max-height:calc(100dvh - 32px)}
+dialog::backdrop{background:rgba(0,0,0,.7)}
+
+/* SPOT */
+.spot{display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap;align-items:end;border-top:1px solid var(--fg);border-bottom:0;padding-top:18px}
+.spot>div:first-child{display:flex;flex-direction:column;gap:6px}
+.coords{font-family:var(--f-mono);font-size:clamp(16px,3.4vw,22px);color:var(--fg)}
+
+@media (max-width:640px){
+  .day{grid-template-columns:1fr auto;gap:10px 12px}
+  .day .bars{grid-column:1/-1}
+  .day .dnums{grid-column:1/-1;grid-template-columns:repeat(4,auto);justify-content:start}
+  .meet{grid-template-columns:1fr;gap:18px}
+}
+h1,h2,h3,.day .dname,.meet-date .d,.photo{font-weight:400!important}
+h2{letter-spacing:.02em}
+.eyebrow,.legend,.pill,.btn,.fsrc,.method summary,.meet-date .m,.meet-date .w,.specs dt,.who .nick,.car,.form label,.flags span,.dnums,.day .dname small,.bars .b em{font-weight:700}
+.mono,.dnums,.coords{font-variant-numeric:tabular-nums}
+.coords{font-weight:700}
+/* LOCK */
+body.locked main,body.locked .priv{display:none!important}
+body:not(.locked) .gate{display:none}
+body.locked .hero{min-height:100svh;margin-bottom:0}
+body.locked .hero-in{min-height:100svh}
+body.locked .hero-center{margin-block:auto}
+body.locked{padding-bottom:0}
+.gate{display:flex;flex-direction:column;align-items:center;gap:10px;margin-top:18px;width:min(420px,100%)}
+.gate label{font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+.gate-row{display:flex;width:100%;border:1px solid rgba(236,236,234,.35);background:rgba(11,12,14,.55);backdrop-filter:blur(6px)}
+.gate input{flex:1;min-width:0;background:transparent;border:0;padding:12px 14px;font-family:var(--f-body);font-weight:700;font-size:16px;letter-spacing:.14em;text-transform:uppercase;color:var(--fg);text-align:center}
+.gate input::placeholder{color:rgba(236,236,234,.35)}
+.gate input:focus{outline:none}
+.gate-row:focus-within{border-color:var(--lamp)}
+.gate .btn{border:0}
+.gate .msg{min-height:1.4em;text-align:center}
+.linkbtn{background:none;border:0;padding:0;cursor:pointer;color:var(--muted);font:inherit;letter-spacing:inherit;text-transform:inherit}
+.linkbtn:hover{color:var(--fg)}
+.crew{gap:12px 20px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body class="locked">
+<header class="hero" aria-labelledby="spot-h">
+  <div class="hero-in">
+    <div class="crew">
+      <div class="crew-name" id="crewName">coffeeGaysClub</div>
+      <a class="priv" href="https://yandex.ru/maps/?whatshere%5Bzoom%5D=18&amp;whatshere%5Bpoint%5D=39.025310,45.383020" target="_blank" rel="noopener">45.383020, 39.025310</a>
+      <button class="linkbtn priv" id="logout" type="button">Выйти</button>
+    </div>
+    <div class="hero-center">
+      <h1 class="spot-name" id="spot-h">Medvedovka</h1>
+      <div class="timer" id="timer" role="timer" aria-live="off">
+        <div class="u"><div class="n" data-u="d"><span>0</span><span>0</span></div><small>дни</small></div><div class="sep">:</div>
+        <div class="u"><div class="n" data-u="h"><span>0</span><span>0</span></div><small>часы</small></div><div class="sep">:</div>
+        <div class="u"><div class="n" data-u="m"><span>0</span><span>0</span></div><small>минуты</small></div><div class="sep">:</div>
+        <div class="u"><div class="n" data-u="s"><span>0</span><span>0</span></div><small>секунды</small></div>
+      </div>
+      <div class="timer-label" id="timerLabel">до первого дождя на споте</div>
+      <form class="gate" id="gate" autocomplete="off">
+        <label for="code">Вход для своих</label>
+        <div class="gate-row">
+          <input id="code" name="code" inputmode="text" autocapitalize="characters" spellcheck="false" placeholder="XXXX-XXXX-XXXX" maxlength="20" required>
+          <button class="btn primary" type="submit" id="gateBtn">Войти</button>
+        </div>
+        <div class="msg" id="gateMsg" aria-live="polite"></div>
+      </form>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section class="tonight" aria-labelledby="verdict-big">
+    <div class="eyebrow" id="verdictLabel">Сегодня после 20:00</div>
+    <div class="big wait" id="verdict-big">Ждём прогноз</div>
+    <p id="verdictText">Загружаем осадки по точке спота.</p>
+    <div class="hero-stats" id="heroStats"></div>
+  </section>
+
+  <section id="meet" aria-labelledby="meet-h">
+    <div class="sec-head">
+      <div><div class="eyebrow">Объявление</div><h2 id="meet-h">Ближайший сбор</h2></div>
+      <button class="btn primary" id="announceBtn" hidden>Объявить сбор</button>
+    </div>
+    <div class="panel" id="meetPanel"><p class="empty">Загружаем объявления…</p></div>
+    <form class="panel form" id="meetForm" hidden>
+      <label>Дата<input type="date" id="mDate" required></label>
+      <label>Время<input type="time" id="mTime" value="20:00" min="20:00" required></label>
+      <label class="full">Что важно знать<textarea id="mNote" placeholder="Например: встречаемся у въезда, берём запаску и трос. Если дождь кончится к 19:00, всё равно едем — будет мокро."></textarea></label>
+      <div class="form-actions">
+        <button class="btn primary" type="submit">Опубликовать</button>
+        <button class="btn ghost" type="button" id="meetCancel">Отмена</button>
+        <span class="msg" id="meetMsg"></span>
+      </div>
+    </form>
+  </section>
+
+  <section id="forecast" aria-labelledby="fc-h">
+    <div class="sec-head">
+      <div><div class="eyebrow">Окно 20:00–00:00 · 14 вечеров</div><h2 id="fc-h">Дрифтовый прогноз</h2></div>
+      <div class="legend">
+        <span><i style="background:var(--go)"></i>Мокро, едем</span>
+        <span><i style="background:var(--maybe)"></i>Может быть</span>
+        <span><i style="background:var(--dry)"></i>Сухо</span>
+      </div>
+    </div>
+    <div class="days" id="days"><div class="fstate"><p>Загружаем прогноз…</p></div></div>
+    <div class="fsrc"><span id="fcSource"></span><a href="https://yandex.ru/pogoda/maps/nowcast?lat=45.38302&amp;lon=39.02531&amp;z=10" target="_blank" rel="noopener">Радар осадков над спотом сейчас →</a></div>
+    <details class="method">
+      <summary>Как считается прогноз</summary>
+      <ul>
+        <li>Сайт сам скачивает прогноз осадков по точке спота у нескольких погодных моделей: ECMWF, ECMWF AIFS (нейросетевая), ICON и ICON-EU, GFS, UKMO, GEM. Каждая модель грузится отдельно, поэтому сбой одной не ломает остальные.</li>
+        <li>Ансамбли ECMWF, GFS, ICON и GEM — это десятки расчётов одной модели с небольшими отклонениями. Доля расчётов, где вечер получается мокрым, и есть честная вероятность.</li>
+        <li>Асфальт считается по балансу воды: дождь добавляет воду, испарение её убирает. Испарение берётся из прогноза и учитывает температуру, ветер, влажность и солнце. Ночью в безветрие асфальт после дневного дождя остаётся мокрым, в жару и ветер сохнет быстро.</li>
+        <li>Вечер мокрый, если вода на асфальте держится хотя бы 2 часа из окна 20:00–00:00. Итоговый шанс — 65% ансамбль и 35% обычные модели. «Едем» — от 60%, «Может быть» — от 30%.</li>
+        <li>Таймер в шапке показывает ближайший час, когда дождь на споте вероятнее, чем нет (от 50%). Дальше пяти дней прогноз осадков заметно менее точный.</li>
+      </ul>
+    </details>
+  </section>
+
+  <section id="crew" aria-labelledby="crew-h">
+    <div class="sec-head">
+      <div><div class="eyebrow">Экипаж</div><h2 id="crew-h">Дрифтеры и машины</h2></div>
+      <button class="btn primary" id="addDriverBtn" hidden>Добавить дрифтера</button>
+    </div>
+    <div class="cards" id="cards"></div>
+  </section>
+
+  <section class="panel spot" aria-label="Точка сбора">
+    <div><div class="eyebrow">Дрифт-спот</div><div class="coords mono" id="coords">45.383020, 39.025310</div></div>
+    <div class="meet-row">
+      <button class="btn" id="copyCoords" type="button">Скопировать координаты</button>
+      <a class="btn primary" href="https://yandex.ru/maps/?rtext=~45.383020%2C39.025310&amp;rtt=auto" target="_blank" rel="noopener">Маршрут в Яндекс Картах</a>
+    </div>
+  </section>
+</main>
+
+<dialog id="driverDlg" aria-labelledby="dlg-h">
+  <form class="form" id="driverForm" method="dialog" style="margin-top:0">
+    <h3 class="full" id="dlg-h" style="font-size:20px">Карточка дрифтера</h3>
+    <label>Имя<input id="dName" required maxlength="40"></label>
+    <label>Позывной<input id="dNick" maxlength="30" placeholder="Например: Шрам"></label>
+    <label>Машина<input id="dCar" required maxlength="60" placeholder="ВАЗ-2105"></label>
+    <label>Год<input id="dYear" inputmode="numeric" maxlength="4" placeholder="1987"></label>
+    <label>Госномер<input id="dPlate" maxlength="12" placeholder="А123ВС 23"></label>
+    <label>Мотор<input id="dEngine" maxlength="60" placeholder="2106, 1.6 карб"></label>
+    <label>Мощность, л.с.<input id="dPower" inputmode="numeric" maxlength="5" placeholder="80"></label>
+    <label>Коробка<input id="dGear" maxlength="40" placeholder="5-ступка"></label>
+    <label>Дифференциал<select id="dDiff"><option value="">—</option><option>Сварка</option><option>Самоблок</option><option>Открытый</option></select></label>
+    <label class="full">Доработки<input id="dMods" maxlength="200" placeholder="Выворот, гидроручник, ковш"></label>
+    <label class="full">О себе и о машине<textarea id="dAbout" maxlength="600"></textarea></label>
+    <label class="full" id="photoWrap">Фото машины<input type="file" id="dPhoto" accept="image/*"></label>
+    <div class="form-actions">
+      <button class="btn primary" type="submit" id="dSave">Сохранить</button>
+      <button class="btn ghost" type="button" id="dCancel">Отмена</button>
+      <span class="msg" id="dMsg"></span>
+    </div>
+  </form>
+</dialog>
+
+<script>
+(function(){
+"use strict";
+const LAT=45.38302, LON=39.02531, TZ="Europe/Moscow";
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+/* ---------- time in Moscow ---------- */
+function nowMsk(){
+  const p=new Intl.DateTimeFormat("sv-SE",{timeZone:TZ,year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",hour12:false}).format(new Date());
+  const [d,t]=p.split(" "); return {date:d,hour:+t.slice(0,2),min:+t.slice(3,5)};
+}
+const ruDay=d=>new Intl.DateTimeFormat("ru-RU",{weekday:"short",day:"numeric",month:"short",timeZone:"UTC"}).format(new Date(d+"T00:00:00Z")).replace(".","");
+const ruMonth=d=>new Intl.DateTimeFormat("ru-RU",{month:"short",timeZone:"UTC"}).format(new Date(d+"T00:00:00Z")).replace(".","");
+const ruWeek=d=>new Intl.DateTimeFormat("ru-RU",{weekday:"long",timeZone:"UTC"}).format(new Date(d+"T00:00:00Z"));
+const addDays=(d,n)=>{const x=new Date(d+"T00:00:00Z");x.setUTCDate(x.getUTCDate()+n);return x.toISOString().slice(0,10)};
+const dayDiff=(a,b)=>Math.round((new Date(b+"T00:00:00Z")-new Date(a+"T00:00:00Z"))/864e5);
+
+/* ---------- drift score ----------
+   Sources (all free, no key, via Open-Meteo):
+   - main: best-match forecast with temperature, wind and evaporation (ET0)
+   - DET: separate deterministic models, each fetched on its own so one bad model never breaks the rest
+   - ENS: ensemble runs (dozens of perturbed members per model) for an honest probability
+   Wet asphalt is a water balance: rain adds water, evaporation removes it. */
+const OM="latitude="+LAT+"&longitude="+LON+"&timezone=Europe%2FMoscow&past_days=1&forecast_days=14";
+const MAIN_URL="https://api.open-meteo.com/v1/forecast?"+OM+
+  "&hourly=precipitation,precipitation_probability,temperature_2m,wind_speed_10m,et0_fao_evapotranspiration&wind_speed_unit=ms";
+const DET_MODELS=[["ecmwf_ifs025","ECMWF"],["ecmwf_aifs025_single","ECMWF AIFS"],["icon_seamless","ICON"],["icon_eu","ICON-EU"],
+  ["gfs_seamless","GFS"],["ukmo_seamless","UKMO"],["gem_seamless","GEM"]];
+const ENS_MODELS=[["ecmwf_ifs025","ECMWF ENS"],["gfs_seamless","GFS ENS"],["icon_seamless","ICON ENS"],["gem_global","GEM ENS"]];
+const WET_MM=0.1, CAP_MM=0.8, MIN_DRY=0.03;   // film on asphalt, mm
+const W0=20, W_LEN=4;                         // drift window 20:00–24:00
+
+const isRainKey=k=>/^precipitation(_|$)/.test(k)&&!/probability/.test(k);
+function align(json,times){
+  const h=json&&json.hourly; if(!h||!h.time) return [];
+  const idx=new Map(h.time.map((t,i)=>[t,i]));
+  return Object.keys(h).filter(isRainKey).map(k=>times.map(t=>{ const i=idx.get(t); const v=i==null?null:h[k][i]; return v==null?null:+v; }))
+    .filter(s=>s.some(v=>v!=null));
+}
+function wetSeries(P,E){
+  let f=0; const out=new Array(P.length);
+  for(let i=0;i<P.length;i++){
+    const p=P[i]; if(p==null){ out[i]=null; f=0; continue; }
+    f=Math.min(CAP_MM,f+p);
+    f=Math.max(0,f-Math.max(MIN_DRY,E[i]||0));
+    out[i]=p>=WET_MM||f>=WET_MM;
+  }
+  return out;
+}
+function filmAt(P,E,upto){ let f=0; for(let i=0;i<=upto;i++){ const p=P[i]||0; f=Math.min(CAP_MM,f+p); f=Math.max(0,f-Math.max(MIN_DRY,E[i]||0)); } return f; }
+function eveningWet(w,i){ let n=0; for(let k=0;k<W_LEN;k++){ const x=w[i+k]; if(x==null) return null; if(x) n++; } return n>=2; }
+
+let bundleMeta={det:0,ens:0,members:0};
+function analyze(b){
+  const mh=b&&b.main&&b.main.hourly; if(!mh||!mh.time) return null;
+  const t=mh.time, n=t.length;
+  const pick=k=>mh[k]||mh[k+"_best_match"]||null;
+  const P=(pick("precipitation")||[]).map(v=>v==null?null:+v);
+  const E=(pick("et0_fao_evapotranspiration")||[]).map(v=>v==null?0.05:+v);
+  const prob=pick("precipitation_probability"), temp=pick("temperature_2m"), wind=pick("wind_speed_10m");
+  const det=[{name:"Open-Meteo",w:wetSeries(P,E)}];
+  for(const [name,s] of (b.det||[])) if(s[0]) det.push({name,w:wetSeries(s[0],E)});
+  const ens=(b.ens||[]).map(([name,ss])=>({name,ws:ss.map(s=>wetSeries(s,E))})).filter(e=>e.ws.length>=5);
+  bundleMeta={det:det.length,ens:ens.length,members:ens.reduce((a,e)=>a+e.ws.length,0)};
+  const v=(a,i)=>a&&a[i]!=null?+a[i]:null;
+  const now=nowMsk(), out=[];
+  for(let i=0;i<n;i++){
+    if(t[i].slice(11,13)!==String(W0)) continue;
+    const date=t[i].slice(0,10);
+    if(date<now.date) continue;
+    if(i+W_LEN>n) break;
+    // deterministic models
+    let dWet=0,dAll=0;
+    for(const d of det){ const r=eveningWet(d.w,i); if(r==null) continue; dAll++; if(r) dWet++; }
+    // ensembles: share of members per model, then mean across models
+    let eWet=0,eAll=0; const shares=[];
+    for(const e of ens){ let a=0,w=0; for(const s of e.ws){ const r=eveningWet(s,i); if(r==null) continue; a++; if(r) w++; } if(a>=5){ shares.push(w/a); eWet+=w; eAll+=a; } }
+    const pDet=dAll?dWet/dAll:null, pEns=shares.length?shares.reduce((x,y)=>x+y,0)/shares.length:null;
+    if(pDet==null&&pEns==null) continue;
+    const p=pEns!=null&&pDet!=null?0.65*pEns+0.35*pDet:(pEns??pDet);
+    let rainIn=0,tMin=99,wMax=0;
+    for(let k=0;k<W_LEN;k++){ rainIn+=v(P,i+k)||0; const tt=v(temp,i+k); if(tt!=null) tMin=Math.min(tMin,tt); wMax=Math.max(wMax,v(wind,i+k)||0); }
+    const water=filmAt(P,E,i-1)+rainIn;
+    const hours=[]; for(let k=-3;k<=3;k++) hours.push({h:W0+k,mm:v(P,i+k),pre:k<0});
+    const status=p>=0.6?"go":p>=0.3?"maybe":"dry";
+    out.push({date,p,pct:Math.round(p*100),dWet,dAll,eWet,eAll,wet:water,rainIn,tMin:tMin===99?null:tMin,wMax,status,hours,
+      ice:tMin<=1&&p>=0.3,windy:wMax>=12,far:dayDiff(now.date,date)>5,isToday:date===now.date});
+  }
+  // hourly chance of rain for the countdown
+  const hourly=t.map((tt,i)=>{
+    const sh=[];
+    for(const e of ens){ let a=0,w=0; for(const s of (b.ens.find(x=>x[0]===e.name)||[0,[]])[1]){ const x=s[i]; if(x==null) continue; a++; if(x>=WET_MM) w++; } if(a>=5) sh.push(w/a); }
+    let a=0,w=0; for(const s of [P,...(b.det||[]).map(d=>d[1][0]).filter(Boolean)]){ const x=s[i]; if(x==null) continue; a++; if(x>=WET_MM) w++; }
+    const pd=a?w/a:null, pe=sh.length?sh.reduce((x,y)=>x+y,0)/sh.length:null;
+    return {t:tt,p:pe!=null&&pd!=null?0.65*pe+0.35*pd:(pe??pd??0)};
+  });
+  out.hourly=hourly;
+  return out;
+}
+
+/* ---------- forecast render ---------- */
+let evenings=null, fcMeta="";
+const LABEL={go:"Мокро · едем",maybe:"Может быть",dry:"Сухо"};
+function renderForecast(){
+  const box=$("days");
+  if(!evenings||!evenings.length){
+    box.innerHTML='<div class="fstate"><h3 style="font-size:18px">Прогноз пока не подключён</h3><p>Здесь появятся 14 вечеров с оценкой покрытия. Пока данных нет, смотри радар осадков над спотом по ссылке ниже.</p></div>';
+    $("fcSource").textContent=fcMeta; renderHero(); return;
+  }
+  const max=3;
+  box.innerHTML=evenings.map(e=>{
+    const bars=e.hours.map((x,j)=>{
+      const mm=x.mm, hgt=mm==null?0:Math.max(4,Math.min(100,mm/max*100));
+      const cls=mm==null?"b empty":(x.pre?"b pre":"b");
+      return (j===3?'<span class="gap"></span>':'')+'<span class="'+cls+'" title="'+x.h+':00 — '+(mm==null?"нет данных":mm.toFixed(1)+" мм")+'"><i style="height:'+(mm?hgt:4)+'%"></i><em>'+x.h+'</em></span>';
+    }).join("");
+    const flags=[];
+    if(e.ice) flags.push("около нуля — возможен гололёд");
+    if(e.windy) flags.push("ветер до "+Math.round(e.wMax)+" м/с");
+    return '<div class="day'+(e.isToday?" today":"")+(e.far?" far":"")+'">'+
+      '<div class="dname">'+(e.isToday?"Сегодня":ruDay(e.date).split(",")[0])+'<small>'+ruDay(e.date).split(", ").slice(-1)[0]+'</small></div>'+
+      '<div><span class="pill '+e.status+'">'+LABEL[e.status]+'</span></div>'+
+      '<div class="bars" aria-label="Осадки по часам с 17 до 23">'+bars+'</div>'+
+      '<div class="dnums"><span>шанс</span><b>'+e.pct+'%</b><span>вода</span><b>'+e.wet.toFixed(1)+' мм</b><span>модели</span><b>'+e.dWet+'/'+e.dAll+'</b>'+(e.eAll?'<span>ансамбль</span><b>'+e.eWet+'/'+e.eAll+'</b>':'')+'<span>темп.</span><b>'+(e.tMin==null?"—":Math.round(e.tMin)+'°')+'</b></div>'+
+      (flags.length?'<div class="flags">'+flags.map(f=>'<span>'+f+'</span>').join("")+'</div>':'')+
+    '</div>';
+  }).join("");
+  $("fcSource").textContent=fcMeta+(evenings.some(e=>e.far)?". Бледные строки дальше 5 дней — прогноз может измениться.":"");
+  renderHero();
+}
+
+function nextGo(){ return evenings&&evenings.find(e=>e.status==="go"); }
+
+function renderHero(){
+  const big=$("verdict-big"), txt=$("verdictText"), stats=$("heroStats"), lab=$("verdictLabel");
+  if(!evenings||!evenings.length){
+    big.className="big wait"; big.textContent="Ждём прогноз";
+    txt.innerHTML="Прогноз ещё не загрузился. Проверь радар осадков ниже.";
+    stats.innerHTML=""; return;
+  }
+  const now=nowMsk();
+  let e=evenings[0];
+  lab.textContent=e.isToday?"Сегодня после 20:00":ruWeek(e.date)+" после 20:00";
+  big.className="big "+e.status;
+  big.textContent=e.status==="go"?"Мокро. Едем":e.status==="maybe"?"Может быть":"Сухо";
+  const g=nextGo();
+  let line="";
+  const who="дождь видят <b>"+e.dWet+" из "+e.dAll+"</b> моделей"+(e.eAll?" и <b>"+e.eWet+" из "+e.eAll+"</b> расчётов ансамбля":"");
+  if(e.status==="go") line="Шанс мокрого асфальта <b>"+e.pct+"%</b>: "+who+". Будет скользко.";
+  else if(e.status==="maybe") line="Шанс мокрого асфальта <b>"+e.pct+"%</b>, модели расходятся: "+who+". Ближе к вечеру глянь радар.";
+  else line="Шанс мокрого асфальта всего <b>"+e.pct+"%</b>, будет сухо.";
+  if(e.status!=="go") line+= g?" Ближайший мокрый вечер — <b>"+(g.isToday?"сегодня":ruDay(g.date))+"</b>.":" Мокрых вечеров в ближайшие 14 дней пока не видно.";
+  txt.innerHTML=line;
+  const chips=[];
+  if(g){
+    const days=dayDiff(now.date,g.date);
+    let hrs=days*24+20-now.hour, mins=-now.min; if(mins<0){hrs-=1;mins+=60;}
+    const cd=hrs<=0?"уже идёт":(hrs>=24?Math.floor(hrs/24)+" д "+(hrs%24)+" ч":hrs+" ч "+mins+" мин");
+    chips.push('<span class="chip"><span class="dot" style="background:var(--go)"></span>До мокрого вечера: <span class="countdown">'+cd+'</span></span>');
+  }
+  if(e.tMin!=null) chips.push('<span class="chip">Темп. <b>'+Math.round(e.tMin)+'°</b></span>');
+  chips.push('<span class="chip">Ветер <b>до '+Math.round(e.wMax)+' м/с</b></span>');
+  if(e.ice) chips.push('<span class="chip warn">Гололёд</span>');
+  stats.innerHTML=chips.join("");
+}
+
+/* ---------- countdown to first rain ---------- */
+let rainAt=null, rainKnown=false, rainP=0;
+function setRainFrom(hourly){
+  if(!hourly) return;
+  rainKnown=true; rainAt=null;
+  for(const x of hourly){
+    const t=new Date(x.t+":00+03:00");
+    if(t.getTime()+3600e3<=Date.now()) continue;
+    if(x.p>=0.5){ rainAt=t; rainP=Math.round(x.p*100); break; }
+  }
+  tick();
+}
+const pad=n=>String(Math.max(0,n)).padStart(2,"0");
+function setUnit(u,v){ const el=document.querySelector('.timer .n[data-u="'+u+'"]'); const s=pad(v); if(el.textContent!==s) el.innerHTML=s.split("").map(c=>"<span>"+c+"</span>").join(""); }
+function tick(){
+  const tm=$("timer"), lab=$("timerLabel");
+  if(!rainKnown){ return; }
+  if(!rainAt){ ["d","h","m","s"].forEach(u=>setUnit(u,0)); tm.classList.remove("now"); lab.innerHTML="Уверенного дождя в ближайшие 14 дней не видно"; return; }
+  let ms=rainAt-Date.now();
+  if(ms<=0){ ["d","h","m","s"].forEach(u=>setUnit(u,0)); tm.classList.add("now"); lab.innerHTML="<b>Дождь идёт сейчас</b> — проверь прогноз на вечер"; return; }
+  tm.classList.remove("now");
+  const s=Math.floor(ms/1000);
+  setUnit("d",Math.floor(s/86400)); setUnit("h",Math.floor(s%86400/3600)); setUnit("m",Math.floor(s%3600/60)); setUnit("s",s%60);
+  const ds=new Intl.DateTimeFormat("ru-RU",{timeZone:TZ,weekday:"short",day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}).format(rainAt).replace(/\./g,"");
+  lab.innerHTML="до первого дождя на споте<br><b>"+ds+" · шанс "+rainP+"%</b>";
+}
+setInterval(tick,1000);
+/* keep the big title and timer inside the screen whatever font loads */
+function fitHero(){
+  const box=document.querySelector(".hero-center"); if(!box) return;
+  const w=box.clientWidth;
+  for(const el of [$("spot-h"),$("timer")]){
+    el.style.fontSize="";
+    let fs=parseFloat(getComputedStyle(el).fontSize), guard=40;
+    while(el.scrollWidth>w&&fs>16&&guard--){ fs*=0.94; el.style.fontSize=fs+"px"; }
+  }
+}
+addEventListener("resize",fitHero);
+if(document.fonts&&document.fonts.ready) document.fonts.ready.then(fitHero);
+fitHero();
+
+/* ---------- forecast source: live fetch, then stored copy ---------- */
+let liveOk=false;
+async function getJSON(url,ms){
+  try{
+    const c=new AbortController(); const to=setTimeout(()=>c.abort(),ms||12000);
+    const r=await fetch(url,{signal:c.signal}); clearTimeout(to);
+    if(!r.ok) return null; const j=await r.json(); return j&&j.hourly&&j.hourly.time?j:null;
+  }catch(_){ return null; }
+}
+const getWithFallback=(url,ms)=>getJSON(url,ms).then(j=>j||getJSON(url.replace("&past_days=1",""),ms));
+function stamp(){ const n=nowMsk(); return String(n.hour).padStart(2,"0")+":"+String(n.min).padStart(2,"0"); }
+function applyBundle(b){
+  const a=analyze(b); if(!a||!a.length) return false;
+  evenings=a; liveOk=true; setRainFrom(a.hourly);
+  const m=bundleMeta;
+  fcMeta="Open-Meteo: "+m.det+" "+(m.det===1?"модель":m.det<5?"модели":"моделей")+(m.members?" и "+m.members+" ансамблевых расчётов ("+m.ens+" ансамбля)":"")+" · обновлено в "+stamp()+" МСК";
+  renderForecast(); return true;
+}
+async function loadLive(){
+  const main=await getJSON(MAIN_URL); if(!main) return false;
+  const times=main.hourly.time;
+  applyBundle({main,det:[],ens:[]});
+  const [dets,enss]=await Promise.all([
+    Promise.all(DET_MODELS.map(([m,name])=>getJSON("https://api.open-meteo.com/v1/forecast?"+OM+"&hourly=precipitation&models="+m).then(j=>j&&[name,align(j,times)]))),
+    Promise.all(ENS_MODELS.map(([m,name])=>getWithFallback("https://ensemble-api.open-meteo.com/v1/ensemble?"+OM+"&hourly=precipitation&models="+m,20000).then(j=>j&&[name,align(j,times)])))
+  ]);
+  applyBundle({main,det:dets.filter(x=>x&&x[1].length),ens:enss.filter(x=>x&&x[1].length)});
+  return true;
+}
+function useStored(doc){
+  if(liveOk||!doc||!doc.data) return;
+  const a=analyze({main:doc.data,det:[],ens:[]}); if(!a) return;
+  evenings=a; setRainFrom(a.hourly);
+  fcMeta="Прогноз Open-Meteo"; renderForecast();
+}
+
+/* ---------- capabilities ---------- */
+let db=null,user=null,assets=null,uid=null,canWrite=false,isAdmin=false;
+let meets=[],rsvps=[],drivers=[],names={},hosted=false;
+
+async function init(){
+  renderForecast();
+  const live=loadLive();
+  if(!window.claude||!claude.use){ await loadStatic(); await live; if(!liveOk) fcMeta="Не удалось загрузить прогноз. Обнови страницу позже."; renderForecast(); return; }
+  [db,user]=await Promise.all([claude.use("db"),claude.use("user")]);
+  claude.use("assets").then(a=>{assets=a; if(!a) $("photoWrap").hidden=true;});
+  if(user){
+    uid=await user.id().catch(()=>null);
+    const cw=await user.can("data.write").catch(()=>null);
+    canWrite=cw!==false; isAdmin=await user.canEdit().catch(()=>false);
+  }
+  if(!db){ await loadStatic(); return; }
+  $("announceBtn").hidden=!canWrite; $("addDriverBtn").hidden=!canWrite;
+  db.doc("settings/main").onSnapshot(s=>{ const d=s.exists?s.data():null; if(d&&d.crewName){ const parts=String(d.crewName).split(" "); const last=parts.pop(); $("crewName").innerHTML=esc(parts.join(" "))+(parts.length?" ":"")+"<span>"+esc(last)+"</span>"; } },()=>{});
+  db.doc("forecast/current").onSnapshot(s=>useStored(s.exists?s.data():null),()=>{});
+  db.collection("meets").onSnapshot(s=>{ meets=s.docs.map(d=>({id:d.id,...d.data()})); renderMeets(); },()=>{});
+  db.collection("rsvp").onSnapshot(s=>{ rsvps=s.docs.map(d=>({id:d.id,...d.data()})); resolveNames(rsvps.map(r=>r.id)).then(renderMeets); },()=>{});
+  db.collection("drivers").orderBy("createdAt","asc").onSnapshot(s=>{ drivers=s.docs.map(d=>({id:d.id,...d.data()})); renderDrivers(); },()=>{ drivers=[]; renderDrivers(); });
+  await live;
+  if(!liveOk&&!evenings){ fcMeta="Свежий прогноз ещё не загружен."; renderForecast(); }
+}
+/* site hosted on its own (GitHub Pages): private data is encrypted in crew/vault.json.
+   Each person has their own code: PBKDF2-SHA256 unwraps the shared AES-GCM key, which opens the payload. */
+const CODE_KEY="medvedovka-code";
+const normCode=c=>String(c||"").toUpperCase().replace(/[^A-Z0-9]/g,"");
+const unb64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+async function sha256hex(t){ const h=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(t)); return [...new Uint8Array(h)].map(b=>b.toString(16).padStart(2,"0")).join(""); }
+let vaultP=null;
+const getVault=()=>vaultP||(vaultP=fetch("crew/vault.json?v="+Date.now(),{cache:"no-store"}).then(r=>{ if(!r.ok) throw new Error("vault"); return r.json(); }).catch(e=>{ vaultP=null; throw e; }));
+async function openVault(code){
+  const c=normCode(code); if(c.length<12) return null;
+  const v=await getVault();
+  const id=(await sha256hex("drift:"+c)).slice(0,16);
+  const e=v.keys.find(k=>k.id===id); if(!e) return null;
+  try{
+    const base=await crypto.subtle.importKey("raw",new TextEncoder().encode(c),"PBKDF2",false,["deriveKey"]);
+    const kek=await crypto.subtle.deriveKey({name:"PBKDF2",hash:"SHA-256",salt:unb64(e.salt),iterations:v.iter},base,{name:"AES-GCM",length:256},false,["decrypt"]);
+    const raw=await crypto.subtle.decrypt({name:"AES-GCM",iv:unb64(e.iv)},kek,unb64(e.ct));
+    const K=await crypto.subtle.importKey("raw",raw,"AES-GCM",false,["decrypt"]);
+    const pt=await crypto.subtle.decrypt({name:"AES-GCM",iv:unb64(v.payload.iv)},K,unb64(v.payload.ct));
+    return JSON.parse(new TextDecoder().decode(pt));
+  }catch(_){ return null; }
+}
+function showPrivate(d){
+  if(d.crewName) $("crewName").textContent=String(d.crewName);
+  meets=(d.meets||[]).map((m,i)=>({id:"m"+i,...m}));
+  drivers=(d.drivers||[]).map((x,i)=>({id:"d"+i,...x}));
+  document.body.classList.remove("locked");
+  renderMeets(); renderDrivers(); renderForecast(); fitHero();
+}
+async function loadStatic(){
+  hosted=true;
+  let saved=null; try{ saved=localStorage.getItem(CODE_KEY); }catch(_){}
+  if(saved){
+    try{ const d=await openVault(saved); if(d){ showPrivate(d); return; } try{ localStorage.removeItem(CODE_KEY); }catch(_){} }catch(_){ $("gateMsg").textContent="Не удалось загрузить закрытую часть. Обнови страницу."; }
+  }
+}
+$("gate").addEventListener("submit",async ev=>{
+  ev.preventDefault();
+  const btn=$("gateBtn"), msg=$("gateMsg"), code=$("code").value;
+  btn.disabled=true; msg.className="msg"; msg.textContent="Проверяем код…";
+  try{
+    const d=await openVault(code);
+    if(!d){ msg.className="msg err"; msg.textContent="Код не подошёл. Проверь буквы и цифры."; return; }
+    try{ localStorage.setItem(CODE_KEY,normCode(code)); }catch(_){}
+    msg.textContent=""; $("code").value=""; showPrivate(d);
+  }catch(_){ msg.className="msg err"; msg.textContent="Нет связи с сайтом. Попробуй ещё раз."; }
+  finally{ btn.disabled=false; }
+});
+$("logout").onclick=()=>{ try{ localStorage.removeItem(CODE_KEY); }catch(_){} location.reload(); };
+async function resolveNames(ids){
+  if(!user||!ids.length) return;
+  try{ const ps=await user.profiles(ids); for(const id of ids){ names[id]=(ps[id]&&ps[id].name)||"Дрифтер"; } }catch(_){}
+}
+
+/* ---------- gatherings ---------- */
+let confirmDel=null;
+function renderMeets(){
+  const panel=$("meetPanel"), today=nowMsk().date;
+  const up=meets.filter(m=>m.date>=today).sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
+  if(!db&&!hosted){ panel.innerHTML='<p class="empty">Загружаем объявления…</p>'; return; }
+  if(!up.length){
+    const g=nextGo();
+    panel.innerHTML='<p class="empty">Сбор пока не объявлен.'+(g?' По прогнозу ближайший мокрый вечер — <b style="color:var(--fg)">'+(g.isToday?"сегодня":ruDay(g.date))+'</b>.':'')+(canWrite?' Нажми «Объявить сбор», дата подставится сама.':'')+'</p>';
+    return;
+  }
+  const m=up[0], ev=evenings&&evenings.find(e=>e.date===m.date);
+  const going=rsvps.filter(r=>Array.isArray(r.going)&&r.going.includes(m.id));
+  const me=uid&&going.some(r=>r.id===uid);
+  panel.innerHTML='<div class="meet">'+
+    '<div class="meet-date"><div class="m">'+esc(ruMonth(m.date))+'</div><div class="d">'+Number(m.date.slice(8))+'</div><div class="w">'+esc(ruWeek(m.date))+'</div></div>'+
+    '<div class="meet-body">'+
+      '<h3>Сбор в <span class="mono" style="color:var(--sodium)">'+esc(m.time||"20:00")+'</span> на споте</h3>'+
+      (ev?'<div><span class="pill '+ev.status+'">'+LABEL[ev.status]+'</span> <span class="msg">вода '+ev.wet.toFixed(1)+' мм · шанс '+ev.pct+'%</span></div>':'')+
+      (m.note?'<p class="meet-note">'+esc(m.note)+'</p>':'')+
+      '<div class="meet-row">'+
+        (uid&&canWrite?'<button class="btn '+(me?"":"primary")+'" id="rsvpBtn">'+(me?"Я не еду":"Я еду")+'</button>':'')+
+        '<a class="btn" href="https://yandex.ru/maps/?rtext=~45.383020%2C39.025310&amp;rtt=auto" target="_blank" rel="noopener">Маршрут</a>'+
+        (canWrite?(confirmDel===m.id?'<span class="confirm">Отменить сбор? <button class="btn" id="delYes">Да, отменить</button><button class="btn ghost" id="delNo">Нет</button></span>':'<button class="btn ghost" id="delMeet">Отменить сбор</button>'):'')+
+      '</div>'+
+      (hosted?'':'<div><div class="eyebrow" style="margin-bottom:6px">Едут: '+going.length+'</div><div class="going">'+(going.length?going.map(r=>'<span>'+esc(names[r.id]||"Дрифтер")+'</span>').join(""):'<span style="background:transparent;color:var(--muted);padding:0">Пока никто не отметился</span>')+'</div></div>')+
+    '</div></div>'+
+    (up.length>1?'<ul class="other-meets">'+up.slice(1).map(o=>'<li><span class="mono" style="color:var(--sodium)">'+esc(ruDay(o.date))+' · '+esc(o.time||"20:00")+'</span><span class="msg">'+esc(o.note||"")+'</span></li>').join("")+'</ul>':'');
+  const rb=$("rsvpBtn"); if(rb) rb.onclick=()=>toggleRsvp(m.id,!me,rb);
+  const dm=$("delMeet"); if(dm) dm.onclick=()=>{confirmDel=m.id;renderMeets();};
+  const dn=$("delNo"); if(dn) dn.onclick=()=>{confirmDel=null;renderMeets();};
+  const dy=$("delYes"); if(dy) dy.onclick=async()=>{dy.disabled=true; try{await db.doc("meets/"+m.id).delete();}catch(_){ } confirmDel=null; renderMeets();};
+}
+async function toggleRsvp(id,on,btn){
+  btn.disabled=true;
+  const mine=rsvps.find(r=>r.id===uid); let list=(mine&&Array.isArray(mine.going))?mine.going.slice():[];
+  const live=new Set(meets.map(x=>x.id)); list=list.filter(x=>live.has(x)&&x!==id); if(on) list.push(id);
+  try{ await db.doc("rsvp/"+uid).set({going:list,updatedAt:Date.now()}); }catch(_){ btn.disabled=false; }
+}
+$("announceBtn").onclick=()=>{
+  const f=$("meetForm"); f.hidden=!f.hidden;
+  if(!f.hidden){ const g=nextGo(); $("mDate").value=g?g.date:nowMsk().date; $("mDate").min=nowMsk().date; $("mDate").focus(); }
+};
+$("meetCancel").onclick=()=>{$("meetForm").hidden=true;};
+$("meetForm").addEventListener("submit",async ev=>{
+  ev.preventDefault(); const msg=$("meetMsg");
+  const date=$("mDate").value, time=$("mTime").value||"20:00";
+  if(!date){msg.className="msg err";msg.textContent="Выбери дату.";return;}
+  if(time<"20:00"){msg.className="msg err";msg.textContent="Катаемся только после 20:00 — поставь время не раньше.";return;}
+  msg.className="msg";msg.textContent="Публикуем…";
+  try{ await db.collection("meets").add({date,time,note:$("mNote").value.trim().slice(0,600),createdBy:uid,createdAt:Date.now()});
+    msg.textContent=""; $("mNote").value=""; $("meetForm").hidden=true;
+  }catch(e){ msg.className="msg err"; msg.textContent=e&&e.code==="invalid_argument"?"У тебя нет прав объявлять сборы. Попроси владельца дать доступ «Участник».":"Не получилось сохранить. Попробуй ещё раз."; }
+});
+
+/* ---------- crew ---------- */
+let editId=null, confirmDrv=null;
+function plateHtml(p){
+  p=String(p||"").trim().toUpperCase(); if(!p) return "";
+  const m=p.match(/^(.*?)\s*(\d{2,3})$/);
+  return '<span class="plate"><span class="num">'+esc(m?m[1]:p)+'</span>'+(m?'<span class="reg">'+esc(m[2])+'<small>RUS</small></span>':'')+'</span>';
+}
+function renderDrivers(){
+  const box=$("cards");
+  if(!drivers.length){
+    box.style.display="block";
+    box.innerHTML='<div class="crew-empty"><h3 style="font-size:18px">Карточек пока нет</h3><p class="empty">Здесь будут дрифтеры компании: имя, позывной, машина, мотор, мощность, коробка, диф, доработки и фото.'+(canWrite?' Добавь первую карточку — свою.':'')+'</p>'+(canWrite?'<button class="btn primary" id="addFirst">Добавить дрифтера</button>':'')+'</div>';
+    const b=$("addFirst"); if(b) b.onclick=()=>openDriver(null);
+    return;
+  }
+  box.style.display="";
+  box.innerHTML=drivers.map(d=>{
+    const rows=[["Мотор",d.engine],["Мощность",d.power?d.power+" л.с.":""],["Коробка",d.gear],["Диф",d.diff],["Доработки",d.mods]].filter(r=>r[1]);
+    const initials=(d.car||"?").replace(/[^0-9A-Za-zА-Яа-я]/g,"").slice(0,4)||"?";
+    return '<article class="card">'+
+      '<div class="photo">'+(d.photo||d.photoId?'<img src="'+esc(d.photo||("/_blob/"+d.photoId))+'" alt="'+esc(d.car)+' — машина '+esc(d.name)+'" loading="lazy">':esc(initials))+plateHtml(d.plate)+'</div>'+
+      '<div class="card-body">'+
+        '<div class="who"><h3>'+esc(d.name)+'</h3>'+(d.nick?'<span class="nick">«'+esc(d.nick)+'»</span>':'')+'</div>'+
+        '<div class="car">'+esc(d.car)+(d.year?' <span class="msg mono">'+esc(d.year)+'</span>':'')+'</div>'+
+        (rows.length?'<dl class="specs">'+rows.map(r=>'<dt>'+r[0]+'</dt><dd>'+esc(r[1])+'</dd>').join("")+'</dl>':'')+
+        (d.about?'<p class="about">'+esc(d.about)+'</p>':'')+
+        (canWrite?'<div class="card-actions">'+(confirmDrv===d.id?'<span class="confirm">Удалить карточку? <button class="btn" data-del-yes="'+d.id+'">Удалить</button><button class="btn ghost" data-del-no="1">Нет</button></span>':'<button class="btn" data-edit="'+d.id+'">Изменить</button><button class="btn ghost" data-del="'+d.id+'">Удалить</button>')+'</div>':'')+
+      '</div></article>';
+  }).join("");
+}
+$("cards").addEventListener("click",async e=>{
+  const t=e.target.closest("button"); if(!t) return;
+  if(t.dataset.edit) openDriver(t.dataset.edit);
+  else if(t.dataset.del){confirmDrv=t.dataset.del;renderDrivers();}
+  else if(t.dataset.delNo){confirmDrv=null;renderDrivers();}
+  else if(t.dataset.delYes){t.disabled=true; try{await db.doc("drivers/"+t.dataset.delYes).delete();}catch(_){ } confirmDrv=null;}
+});
+const F={name:"dName",nick:"dNick",car:"dCar",year:"dYear",plate:"dPlate",engine:"dEngine",power:"dPower",gear:"dGear",diff:"dDiff",mods:"dMods",about:"dAbout"};
+function openDriver(id){
+  editId=id; const d=id?drivers.find(x=>x.id===id):{};
+  for(const k in F) $(F[k]).value=(d&&d[k])||"";
+  $("dPhoto").value=""; $("dMsg").textContent=""; $("dMsg").className="msg";
+  $("driverDlg").showModal();
+}
+$("addDriverBtn").onclick=()=>openDriver(null);
+$("dCancel").onclick=()=>$("driverDlg").close();
+async function shrink(file){
+  const img=await createImageBitmap(file); const s=Math.min(1,1400/Math.max(img.width,img.height));
+  const c=document.createElement("canvas"); c.width=Math.round(img.width*s); c.height=Math.round(img.height*s);
+  c.getContext("2d").drawImage(img,0,0,c.width,c.height);
+  return await new Promise(r=>c.toBlob(r,"image/jpeg",0.85));
+}
+$("driverForm").addEventListener("submit",async ev=>{
+  ev.preventDefault(); const msg=$("dMsg"), btn=$("dSave"); btn.disabled=true; msg.className="msg"; msg.textContent="Сохраняем…";
+  try{
+    const body={}; for(const k in F) body[k]=$(F[k]).value.trim();
+    if(!body.name||!body.car) throw {code:"need"};
+    const old=editId?drivers.find(x=>x.id===editId):null;
+    body.photoId=old&&old.photoId||"";
+    const f=$("dPhoto").files[0];
+    if(f&&assets){ msg.textContent="Загружаем фото…"; const b=await shrink(f).catch(()=>f); const up=await assets.upload(b||f); body.photoId=up.id; }
+    if(editId){ body.updatedAt=Date.now(); await db.doc("drivers/"+editId).update(body); }
+    else { body.createdAt=Date.now(); body.createdBy=uid; await db.collection("drivers").add(body); }
+    $("driverDlg").close();
+  }catch(e){
+    msg.className="msg err";
+    msg.textContent=e&&e.code==="need"?"Заполни имя и машину.":e&&e.code==="invalid_argument"?"Нет прав на изменение. Попроси владельца дать доступ «Участник».":"Не получилось сохранить. Попробуй ещё раз.";
+  }finally{ btn.disabled=false; }
+});
+
+/* ---------- spot ---------- */
+$("copyCoords").onclick=async()=>{
+  const b=$("copyCoords");
+  try{ await navigator.clipboard.writeText("45.383020, 39.025310"); b.textContent="Скопировано"; }
+  catch(_){ const r=document.createRange(); r.selectNodeContents($("coords")); const s=getSelection(); s.removeAllRanges(); s.addRange(r); b.textContent="Выделено, скопируй"; }
+  setTimeout(()=>b.textContent="Скопировать координаты",2000);
+};
+
+
+setInterval(()=>{ if(liveOk) loadLive(); else renderHero(); },30*60*1000);
+setInterval(renderHero,60*1000);
+init();
+})();
+</script>
+
+</body>
+</html>
