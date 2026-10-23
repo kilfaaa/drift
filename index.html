@@ -69,7 +69,7 @@ h2{font-size:clamp(22px,4vw,30px);text-transform:uppercase;letter-spacing:.04em}
 .timer{display:flex;white-space:nowrap;align-items:flex-start;justify-content:center;gap:clamp(6px,1.6vw,14px);font-family:var(--f-display);font-size:clamp(40px,9vw,96px);line-height:1}
 .timer .u{display:flex;flex-direction:column;align-items:center;gap:8px}
 .timer .n{display:flex}
-.timer .n span{display:inline-block;width:.56em;text-align:center}
+.timer .n>span{display:inline-block;width:.56em;text-align:center}
 .timer .sep{opacity:.45}
 .timer small{font-family:var(--f-body);font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
 .timer-label{line-height:1.7;font-size:13px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
@@ -199,6 +199,26 @@ h2{letter-spacing:.02em}
 .eyebrow,.legend,.pill,.btn,.fsrc,.method summary,.meet-date .m,.meet-date .w,.specs dt,.who .nick,.car,.form label,.flags span,.dnums,.day .dname small,.bars .b em{font-weight:700}
 .mono,.dnums,.coords{font-variant-numeric:tabular-nums}
 .coords{font-weight:700}
+/* MOTION */
+.rain{position:absolute;inset:0;width:100%;height:100%;z-index:1;pointer-events:none;opacity:0;transition:opacity 1.2s}
+.hero.raining .rain{opacity:1}
+.refl{position:absolute;left:0;right:0;bottom:0;height:42%;z-index:1;pointer-events:none;opacity:0;transition:opacity 1.6s;overflow:hidden}
+.hero.wet .refl{opacity:1}
+.refl i{position:absolute;bottom:-6%;width:clamp(10px,2.2vw,22px);height:70%;transform:translateX(-50%) scaleX(1);
+  background:linear-gradient(0deg,rgba(233,194,123,0) 0%,rgba(233,194,123,.28) 35%,rgba(233,194,123,.08) 80%,rgba(233,194,123,0) 100%);
+  filter:blur(5px);animation:shimmer 3.4s ease-in-out infinite}
+.refl i:nth-child(2n){animation-duration:4.1s;animation-delay:-1.3s;height:58%}
+.refl i:nth-child(3n){animation-duration:2.9s;animation-delay:-.6s;height:64%}
+@keyframes shimmer{0%,100%{opacity:.55;transform:translateX(-50%) scaleX(1)}35%{opacity:1;transform:translateX(-50%) scaleX(1.35)}60%{opacity:.7;transform:translateX(-50%) scaleX(.85)}}
+.timer .n>span{height:1em;overflow:hidden;position:relative}
+.timer .roll{display:flex;flex-direction:column;transition:transform .55s cubic-bezier(.2,.8,.2,1);will-change:transform}
+.timer .roll i{display:block;height:1em;line-height:1em;font-style:normal;text-align:center}
+.day .bars .b i{transform:scaleY(0);transform-origin:bottom;transition:transform .7s cubic-bezier(.2,.8,.2,1)}
+.day.in .bars .b i{transform:scaleY(1)}
+.day.in .bars .b:nth-child(2) i{transition-delay:.04s}.day.in .bars .b:nth-child(3) i{transition-delay:.08s}.day.in .bars .b:nth-child(5) i{transition-delay:.14s}
+.day.in .bars .b:nth-child(6) i{transition-delay:.18s}.day.in .bars .b:nth-child(7) i{transition-delay:.22s}.day.in .bars .b:nth-child(8) i{transition-delay:.26s}
+@media (prefers-reduced-motion:reduce){.day .bars .b i{transform:none}.refl i{animation:none}}
+
 /* SPOT TABS */
 .spots{display:inline-flex;border:1px solid rgba(236,236,234,.35);background:rgba(11,12,14,.5);backdrop-filter:blur(6px);max-width:100%}
 .spots button{display:inline-flex;align-items:center;gap:8px;background:transparent;border:0;cursor:pointer;color:rgba(236,236,234,.75);padding:9px 14px;font:inherit;font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;white-space:nowrap}
@@ -277,6 +297,8 @@ body.locked{padding-bottom:0}
 </head>
 <body class="locked">
 <header class="hero" aria-labelledby="spot-h">
+  <canvas class="rain" id="rain" aria-hidden="true"></canvas>
+  <div class="refl" aria-hidden="true"><i style="left:9%"></i><i style="left:23%"></i><i style="left:41%"></i><i style="left:58%"></i><i style="left:74%"></i><i style="left:90%"></i></div>
   <div class="hero-in">
     <div class="crew">
       <div class="crew-name" id="crewName">coffeeGaysClub</div>
@@ -553,7 +575,23 @@ function renderForecast(){
     '</div>';
   }).join("");
   $("fcSource").textContent=fcMeta+(evenings.some(e=>e.far)?". Бледные строки дальше 5 дней — прогноз может измениться.":"");
+  animateDays();
   renderHero();
+}
+const REDUCE=matchMedia("(prefers-reduced-motion: reduce)").matches;
+let dayObs=null;
+function countUp(el){
+  const to=+el.dataset.pct||0, small=el.querySelector("small"), t0=performance.now(), dur=750;
+  const step=t=>{ const k=Math.min(1,(t-t0)/dur), v=Math.round(to*(1-Math.pow(1-k,3))); el.firstChild.nodeValue=String(v); if(k<1) requestAnimationFrame(step); };
+  if(small) requestAnimationFrame(step);
+}
+function animateDays(){
+  const rows=[...document.querySelectorAll("#days .day")];
+  rows.forEach(r=>{ const b=r.querySelector(".bigpct"); if(b) b.dataset.pct=b.firstChild.nodeValue; });
+  if(REDUCE||!("IntersectionObserver" in window)){ rows.forEach(r=>r.classList.add("in")); return; }
+  if(dayObs) dayObs.disconnect();
+  dayObs=new IntersectionObserver(es=>es.forEach(en=>{ if(!en.isIntersecting) return; const r=en.target; r.classList.add("in"); const b=r.querySelector(".bigpct"); if(b&&!r.dataset.counted){ r.dataset.counted=1; b.firstChild.nodeValue="0"; countUp(b); } dayObs.unobserve(r); }),{threshold:.25});
+  rows.forEach(r=>dayObs.observe(r));
 }
 
 function nextGo(){ return evenings&&evenings.find(e=>e.status==="go"); }
@@ -593,6 +631,42 @@ function renderHero(){
   if(e.ice) chips.push('<span class="chip warn">Гололёд</span>');
   stats.innerHTML=chips.join("");
   renderSoon();
+  heroWeather();
+}
+
+/* ---------- hero rain and wet reflections, driven by the forecast ---------- */
+const rainFx=(()=>{
+  const c=$("rain"), ctx=c.getContext("2d"), hero=document.querySelector(".hero");
+  let drops=[], target=0, w=0, h=0, on=false, vis=true, raf=0;
+  function size(){ const r=c.getBoundingClientRect(), dpr=Math.min(2,devicePixelRatio||1); w=c.width=Math.round(r.width*dpr); h=c.height=Math.round(r.height*dpr); }
+  function mk(){ const dpr=Math.min(2,devicePixelRatio||1); return {x:Math.random()*w*1.2,y:Math.random()*h,l:(10+Math.random()*22)*dpr,s:(9+Math.random()*9)*dpr,a:.10+Math.random()*.22}; }
+  function frame(){
+    raf=0; if(!on||!vis) return;
+    while(drops.length<target) drops.push(mk());
+    if(drops.length>target) drops.length=target;
+    ctx.clearRect(0,0,w,h); ctx.lineWidth=Math.min(2,devicePixelRatio||1)*.9; ctx.lineCap="round";
+    for(const d of drops){ d.y+=d.s; d.x-=d.s*.18; if(d.y>h){ d.y=-d.l; d.x=Math.random()*w*1.2; }
+      ctx.strokeStyle="rgba(214,226,240,"+d.a+")"; ctx.beginPath(); ctx.moveTo(d.x,d.y); ctx.lineTo(d.x+d.l*.18,d.y-d.l); ctx.stroke(); }
+    raf=requestAnimationFrame(frame);
+  }
+  function set(mm){
+    const dens=mm<=0?0:Math.round(Math.min(1,0.25+Math.log10(1+mm*4)/1.1)*(innerWidth<600?140:260));
+    target=dens; on=dens>0; hero.classList.toggle("raining",on);
+    if(REDUCE){ if(on){ size(); drops=Array.from({length:target},mk); ctx.clearRect(0,0,w,h); ctx.lineWidth=1; for(const d of drops){ ctx.strokeStyle="rgba(214,226,240,"+d.a+")"; ctx.beginPath(); ctx.moveTo(d.x,d.y); ctx.lineTo(d.x+d.l*.18,d.y-d.l); ctx.stroke(); } } return; }
+    if(on&&!raf){ size(); raf=requestAnimationFrame(frame); }
+  }
+  addEventListener("resize",()=>{ if(on) size(); });
+  document.addEventListener("visibilitychange",()=>{ vis=!document.hidden; if(vis&&on&&!raf&&!REDUCE) raf=requestAnimationFrame(frame); });
+  if("IntersectionObserver" in window) new IntersectionObserver(es=>{ vis=es[0].isIntersecting&&!document.hidden; if(vis&&on&&!raf&&!REDUCE) raf=requestAnimationFrame(frame); }).observe(hero);
+  return {set};
+})();
+function heroWeather(){
+  const hero=document.querySelector(".hero");
+  const H=evenings&&evenings.hourly; let mm=0;
+  if(H){ const now=Date.now(); const cur=H.find(x=>{ const t=new Date(x.t+":00+03:00").getTime(); return t<=now&&now<t+3600e3; }); if(cur&&(cur.p>=0.5||cur.mm>=0.1)) mm=Math.max(cur.mm,0.15); }
+  rainFx.set(mm);
+  const e=evenings&&evenings[0];
+  hero.classList.toggle("wet",!!(e&&e.status==="go"));
 }
 
 /* ---------- next hours ---------- */
@@ -637,7 +711,13 @@ function setRainFrom(evs){
   tick();
 }
 const pad=n=>String(Math.max(0,n)).padStart(2,"0");
-function setUnit(u,v){ const el=document.querySelector('.timer .n[data-u="'+u+'"]'); const s=pad(v); if(el.textContent!==s) el.innerHTML=s.split("").map(c=>"<span>"+c+"</span>").join(""); }
+const DIGITS='<i>0</i><i>1</i><i>2</i><i>3</i><i>4</i><i>5</i><i>6</i><i>7</i><i>8</i><i>9</i>';
+function setUnit(u,v){
+  const el=document.querySelector('.timer .n[data-u="'+u+'"]'); const s=pad(v);
+  if(!el.querySelector(".roll")||el.children.length!==s.length) el.innerHTML=s.split("").map(()=>'<span><span class="roll">'+DIGITS+'</span></span>').join("");
+  el.setAttribute("aria-label",s);
+  [...el.querySelectorAll(".roll")].forEach((r,k)=>{ const d=+s[k]; if(r.dataset.d!==String(d)){ r.dataset.d=d; r.style.transform="translateY("+(-d)+"em)"; } });
+}
 function tick(){
   const tm=$("timer"), lab=$("timerLabel");
   if(!rainKnown){ return; }
