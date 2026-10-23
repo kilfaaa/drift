@@ -1,15 +1,8 @@
 {
- "updates": [
-  "my_chat_member:group:left",
-  "message:group:",
-  "my_chat_member:group:member",
-  "message:group:",
-  "message:group:",
-  "message:group:"
- ],
- "at": "2026-10-23T23:13",
- "mode": "test",
- "slot": "test",
+ "updates": [],
+ "at": "2026-10-23T23:15",
+ "mode": "auto",
+ "slot": "collect",
  "telegram": true,
  "vault": true,
  "chat": true,
