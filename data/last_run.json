@@ -1,8 +1,10 @@
 {
- "updates": [],
- "at": "2026-10-23T23:15",
- "mode": "auto",
- "slot": "collect",
+ "updates": [
+  "message:group:"
+ ],
+ "at": "2026-10-23T23:16",
+ "mode": "testpoll",
+ "slot": "testpoll",
  "telegram": true,
  "vault": true,
  "chat": true,

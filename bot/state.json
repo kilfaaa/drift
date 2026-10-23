@@ -1,7 +1,13 @@
 {
  "logged": "2026-10-23",
- "offset": 225345746,
+ "offset": 225345747,
  "chat_id": -5543424763,
  "hello": true,
- "announced": []
+ "announced": [],
+ "polls": {
+  "5395465653857557145": {
+   "date": "2026-10-23",
+   "kind": "test"
+  }
+ }
 }
