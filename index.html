@@ -202,14 +202,6 @@ h2{letter-spacing:.02em}
 /* MOTION */
 .rain{position:absolute;inset:0;width:100%;height:100%;z-index:1;pointer-events:none;opacity:0;transition:opacity 1.2s}
 .hero.raining .rain{opacity:1}
-.refl{position:absolute;left:0;right:0;bottom:0;height:42%;z-index:1;pointer-events:none;opacity:0;transition:opacity 1.6s;overflow:hidden}
-.hero.wet .refl{opacity:1}
-.refl i{position:absolute;bottom:-6%;width:clamp(10px,2.2vw,22px);height:70%;transform:translateX(-50%) scaleX(1);
-  background:linear-gradient(0deg,rgba(233,194,123,0) 0%,rgba(233,194,123,.28) 35%,rgba(233,194,123,.08) 80%,rgba(233,194,123,0) 100%);
-  filter:blur(5px);animation:shimmer 3.4s ease-in-out infinite}
-.refl i:nth-child(2n){animation-duration:4.1s;animation-delay:-1.3s;height:58%}
-.refl i:nth-child(3n){animation-duration:2.9s;animation-delay:-.6s;height:64%}
-@keyframes shimmer{0%,100%{opacity:.55;transform:translateX(-50%) scaleX(1)}35%{opacity:1;transform:translateX(-50%) scaleX(1.35)}60%{opacity:.7;transform:translateX(-50%) scaleX(.85)}}
 .timer .n>span{height:1em;overflow:hidden;position:relative}
 .timer .roll{display:flex;flex-direction:column;transition:transform .55s cubic-bezier(.2,.8,.2,1);will-change:transform}
 .timer .roll i{display:block;height:1em;line-height:1em;font-style:normal;text-align:center}
@@ -217,7 +209,7 @@ h2{letter-spacing:.02em}
 .day.in .bars .b i{transform:scaleY(1)}
 .day.in .bars .b:nth-child(2) i{transition-delay:.04s}.day.in .bars .b:nth-child(3) i{transition-delay:.08s}.day.in .bars .b:nth-child(5) i{transition-delay:.14s}
 .day.in .bars .b:nth-child(6) i{transition-delay:.18s}.day.in .bars .b:nth-child(7) i{transition-delay:.22s}.day.in .bars .b:nth-child(8) i{transition-delay:.26s}
-@media (prefers-reduced-motion:reduce){.day .bars .b i{transform:none}.refl i{animation:none}}
+@media (prefers-reduced-motion:reduce){.day .bars .b i{transform:none}}
 
 /* SPOT TABS */
 .spots{display:inline-flex;border:1px solid rgba(236,236,234,.35);background:rgba(11,12,14,.5);backdrop-filter:blur(6px);max-width:100%}
@@ -298,7 +290,6 @@ body.locked{padding-bottom:0}
 <body class="locked">
 <header class="hero" aria-labelledby="spot-h">
   <canvas class="rain" id="rain" aria-hidden="true"></canvas>
-  <div class="refl" aria-hidden="true"><i style="left:9%"></i><i style="left:23%"></i><i style="left:41%"></i><i style="left:58%"></i><i style="left:74%"></i><i style="left:90%"></i></div>
   <div class="hero-in">
     <div class="crew">
       <div class="crew-name" id="crewName">coffeeGaysClub</div>
@@ -665,8 +656,6 @@ function heroWeather(){
   const H=evenings&&evenings.hourly; let mm=0;
   if(H){ const now=Date.now(); const cur=H.find(x=>{ const t=new Date(x.t+":00+03:00").getTime(); return t<=now&&now<t+3600e3; }); if(cur&&(cur.p>=0.5||cur.mm>=0.1)) mm=Math.max(cur.mm,0.15); }
   rainFx.set(mm);
-  const e=evenings&&evenings[0];
-  hero.classList.toggle("wet",!!(e&&e.status==="go"));
 }
 
 /* ---------- next hours ---------- */
