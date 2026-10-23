@@ -125,7 +125,7 @@ def collect_updates(tg: TG, st: dict, vault: Vault):
         if pa and vault.ok:
             poll = st.get("polls", {}).get(pa["poll_id"])
             user = pa.get("user")
-            if poll and user:
+            if poll and user and poll.get("kind") != "test":
                 uid = str(user["id"])
                 name = " ".join(x for x in (user.get("first_name"), user.get("last_name")) if x) or user.get("username") or "Без имени"
                 p = vault.stats["people"].setdefault(uid, {"name": name, "dates": []})
@@ -309,7 +309,7 @@ def calibrate_models(cal: dict, days: int = 365):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--mode", default="auto", choices=["auto", "noon", "evening", "collect", "calibrate", "test"])
+    ap.add_argument("--mode", default="auto", choices=["auto", "noon", "evening", "collect", "calibrate", "test", "testpoll"])
     a = ap.parse_args()
     st = load_json(STATE, {})
     cal = load_json(CAL, {})
@@ -331,7 +331,11 @@ def main():
           f"| det={len(b['det']) + 1 if b else 0} ens={len(b['ens']) if b else 0}")
     if ev:
         log_forecast(st, ev)
-        if a.mode == "test" and tg.token and st.get("chat_id"):
+        if a.mode == "testpoll" and tg.token and st.get("chat_id"):
+            e = ev[0]
+            send_poll(tg, st, f"Тест опроса (голоса в рейтинг не идут). Сегодня после 20:00 на Медведовке {evening_line(e)}.\n{SITE}",
+                      "Тест: едешь сегодня?", e["date"], "test")
+        elif a.mode == "test" and tg.token and st.get("chat_id"):
             e = ev[0]
             tg.call("sendMessage", chat_id=st["chat_id"], text=f"Проверка связи. Сегодня после 20:00: {evening_line(e)}.\n{SITE}")
         elif slot != "calibrate":

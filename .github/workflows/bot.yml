@@ -15,7 +15,7 @@ on:
         description: "Режим"
         type: choice
         default: auto
-        options: [auto, noon, evening, collect, calibrate, test]
+        options: [auto, noon, evening, collect, calibrate, test, testpoll]
 
 permissions:
   contents: write
