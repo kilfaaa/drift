@@ -43,7 +43,8 @@ jobs:
         run: |
           git config user.name "medvedovka-bot"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add bot/state.json crew/stats.json data/ 2>/dev/null || true
+          git add bot/state.json data/
+          [ -f crew/stats.json ] && git add crew/stats.json
           if git diff --cached --quiet; then echo "без изменений"; exit 0; fi
           git commit -m "бот: прогноз, журнал, статистика"
           for i in 1 2 3; do git pull --rebase origin main && git push origin HEAD:main && exit 0; sleep 5; done
