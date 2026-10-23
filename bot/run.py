@@ -335,6 +335,11 @@ def main():
     verify(cal)
     save_json(CAL, cal)
     save_json(STATE, st)
+    save_json(ROOT / "data" / "last_run.json", {
+        "at": E.now_msk().strftime("%Y-%m-%dT%H:%M"), "mode": a.mode, "slot": slot,
+        "telegram": bool(tg.token), "vault": vault.ok, "chat": bool(st.get("chat_id")),
+        "evenings": len(ev), "det": (len(b["det"]) + 1) if b else 0, "ens": len(b["ens"]) if b else 0,
+        "errors": E.ERRORS[:30]})
 
 
 if __name__ == "__main__":

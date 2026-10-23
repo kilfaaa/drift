@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import json
 import time
+import urllib.error
 import urllib.parse
 import urllib.request
 from datetime import datetime, timedelta, timezone
@@ -30,7 +31,11 @@ def now_msk() -> datetime:
     return datetime.now(MSK)
 
 
+ERRORS: list = []   # диагностика последнего запуска
+
+
 def get_json(url: str, timeout: int = 30, tries: int = 3):
+    host = url.split("/")[2]
     for k in range(tries):
         try:
             req = urllib.request.Request(url, headers=UA)
@@ -38,12 +43,19 @@ def get_json(url: str, timeout: int = 30, tries: int = 3):
                 j = json.loads(r.read().decode())
             if isinstance(j, dict) and j.get("hourly", {}).get("time"):
                 return j
+            ERRORS.append(f"{host}: пустой ответ {str(j)[:120]}")
             return None
         except urllib.error.HTTPError as e:
+            body = ""
+            try:
+                body = e.read().decode()[:160]
+            except Exception:
+                pass
+            ERRORS.append(f"{host}: HTTP {e.code} {body}")
             if e.code in (400, 404):
                 return None
-        except Exception:
-            pass
+        except Exception as e:
+            ERRORS.append(f"{host}: {type(e).__name__} {str(e)[:120]}")
         time.sleep(2 * (k + 1))
     return None
 
