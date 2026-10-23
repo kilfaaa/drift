@@ -1,7 +1,8 @@
 {
- "at": "2026-10-23T23:10",
- "mode": "test",
- "slot": "test",
+ "updates": [],
+ "at": "2026-10-23T23:11",
+ "mode": "auto",
+ "slot": "collect",
  "telegram": true,
  "vault": true,
  "chat": false,
