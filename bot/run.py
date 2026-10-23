@@ -141,10 +141,24 @@ def collect_updates(tg: TG, st: dict, vault: Vault):
         vault.save_stats()
 
 
-def send_poll(tg: TG, st: dict, text: str, question: str, date: str, kind: str):
+def with_joke(st: dict, vault: "Vault", text: str) -> str:
+    """Добавить анекдот: по очереди про каждого из экипажа, без повторов, пока не кончатся."""
+    jokes = (vault.data.get("jokes") or {}) if vault.ok else {}
+    people = sorted(k for k, v in jokes.items() if v)
+    if not people:
+        return text
+    n = st.get("joke_n", 0); st["joke_n"] = n + 1
+    who = people[n % len(people)]
+    lst = jokes[who]
+    return f"{text}\n\n🖤 {lst[(n // len(people)) % len(lst)]}"
+
+
+def send_poll(tg: TG, st: dict, text: str, question: str, date: str, kind: str, vault: "Vault | None" = None):
     chat = st.get("chat_id")
     if not chat:
         return False
+    if vault is not None:
+        text = with_joke(st, vault, text)
     tg.call("sendMessage", chat_id=chat, text=text, disable_web_page_preview=True)
     m = tg.call("sendPoll", chat_id=chat, question=question, options=[{"text": "Еду"}, {"text": "Не еду"}], is_anonymous=False)
     if m and m.get("poll"):
@@ -188,19 +202,19 @@ def notify(tg: TG, st: dict, vault: Vault, ev: list, slot: str):
         if e:
             text += f"\nПрогноз на вечер: {evening_line(e)}."
         text += f"\n{SITE}"
-        if send_poll(tg, st, text, f"Едешь на сбор {ru_date(m['date'])}?", m["date"], "meet"):
+        if send_poll(tg, st, text, f"Едешь на сбор {ru_date(m['date'])}?", m["date"], "meet", vault):
             ann.append(key); polled.add(m["date"])
 
     e = by_date.get(today)
     if slot in ("noon", "evening") and e and e["status"] == "go" and today not in polled:
         lead = "Сегодня после 20:00 на Медведовке" if slot == "noon" else "Прогноз улучшился: сегодня после 20:00 на Медведовке"
-        send_poll(tg, st, f"{lead} {evening_line(e)}.\n{SITE}", f"Сегодня 20:00, мокро {e['pct']}%. Едешь?", today, "weather")
+        send_poll(tg, st, f"{lead} {evening_line(e)}.\n{SITE}", f"Сегодня 20:00, мокро {e['pct']}%. Едешь?", today, "weather", vault)
     elif slot == "evening" and e and today in polled and e["status"] == "dry" and st.get("cancelled") != today:
-        tg.call("sendMessage", chat_id=chat, text=f"Отбой: прогноз ухудшился, к вечеру мокро всего {e['pct']}%.")
+        tg.call("sendMessage", chat_id=chat, text=with_joke(st, vault, f"Отбой: прогноз ухудшился, к вечеру мокро всего {e['pct']}%."))
         st["cancelled"] = today
     t = by_date.get(tomorrow)
     if slot == "noon" and t and t["status"] == "go" and st.get("heads_up") != tomorrow and tomorrow not in polled:
-        tg.call("sendMessage", chat_id=chat, text=f"Завтра ({ru_date(tomorrow)}) после 20:00 на Медведовке {evening_line(t)}. Опрос пришлю завтра в обед, если прогноз устоит.")
+        tg.call("sendMessage", chat_id=chat, text=with_joke(st, vault, f"Завтра ({ru_date(tomorrow)}) после 20:00 на Медведовке {evening_line(t)}. Опрос пришлю завтра в обед, если прогноз устоит."))
         st["heads_up"] = tomorrow
 
 
@@ -334,10 +348,10 @@ def main():
         if a.mode == "testpoll" and tg.token and st.get("chat_id"):
             e = ev[0]
             send_poll(tg, st, f"Тест опроса (голоса в рейтинг не идут). Сегодня после 20:00 на Медведовке {evening_line(e)}.\n{SITE}",
-                      "Тест: едешь сегодня?", e["date"], "test")
+                      "Тест: едешь сегодня?", e["date"], "test", vault)
         elif a.mode == "test" and tg.token and st.get("chat_id"):
             e = ev[0]
-            tg.call("sendMessage", chat_id=st["chat_id"], text=f"Проверка связи. Сегодня после 20:00: {evening_line(e)}.\n{SITE}")
+            tg.call("sendMessage", chat_id=st["chat_id"], text=with_joke(st, vault, f"Проверка связи. Сегодня после 20:00: {evening_line(e)}.\n{SITE}"))
         elif slot != "calibrate":
             notify(tg, st, vault, ev, slot)
     verify(cal)
