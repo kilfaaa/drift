@@ -1,11 +1,18 @@
 {
- "updates": [],
- "at": "2026-10-23T23:11",
- "mode": "auto",
- "slot": "collect",
+ "updates": [
+  "my_chat_member:group:left",
+  "message:group:",
+  "my_chat_member:group:member",
+  "message:group:",
+  "message:group:",
+  "message:group:"
+ ],
+ "at": "2026-10-23T23:13",
+ "mode": "test",
+ "slot": "test",
  "telegram": true,
  "vault": true,
- "chat": false,
+ "chat": true,
  "evenings": 14,
  "det": 8,
  "ens": 4,
