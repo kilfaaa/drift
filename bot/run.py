@@ -103,16 +103,20 @@ def collect_updates(tg: TG, st: dict, vault: Vault):
     if not tg.token:
         return
     ups = tg.call("getUpdates", offset=st.get("offset", 0), timeout=0,
-                  allowed_updates=["message", "my_chat_member", "poll_answer"]) or []
+                  allowed_updates=["message", "edited_message", "my_chat_member", "poll_answer"]) or []
     changed_stats = False
+    seen = st.setdefault("_seen", [])
     for u in ups:
         st["offset"] = u["update_id"] + 1
+        kind = next((k for k in u if k != "update_id"), "?")
+        obj = u.get(kind) if isinstance(u.get(kind), dict) else {}
+        seen.append(f"{kind}:{(obj.get('chat') or {}).get('type', '-')}:{((obj.get('new_chat_member') or {}).get('status', ''))}")
         mcm = u.get("my_chat_member")
-        if mcm and mcm["chat"]["type"] in ("group", "supergroup") and mcm["new_chat_member"]["status"] in ("member", "administrator"):
+        if mcm and mcm["chat"]["type"] in ("group", "supergroup") and mcm["new_chat_member"]["status"] in ("member", "administrator", "restricted"):
             if not st.get("chat_id"):
                 st["chat_id"] = mcm["chat"]["id"]
                 st["hello"] = False
-        msg = u.get("message")
+        msg = u.get("message") or u.get("edited_message")
         if msg and msg.get("chat", {}).get("type") in ("group", "supergroup") and not st.get("chat_id"):
             st["chat_id"] = msg["chat"]["id"]; st["hello"] = False
         if msg and msg.get("migrate_to_chat_id") and msg["chat"]["id"] == st.get("chat_id"):
@@ -334,8 +338,9 @@ def main():
             notify(tg, st, vault, ev, slot)
     verify(cal)
     save_json(CAL, cal)
+    seen = st.pop("_seen", [])
     save_json(STATE, st)
-    save_json(ROOT / "data" / "last_run.json", {
+    save_json(ROOT / "data" / "last_run.json", {"updates": seen[-20:],
         "at": E.now_msk().strftime("%Y-%m-%dT%H:%M"), "mode": a.mode, "slot": slot,
         "telegram": bool(tg.token), "vault": vault.ok, "chat": bool(st.get("chat_id")),
         "evenings": len(ev), "det": (len(b["det"]) + 1) if b else 0, "ens": len(b["ens"]) if b else 0,
