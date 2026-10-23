@@ -5,6 +5,14 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>coffeeGaysClub · Medvedovka</title>
 <meta name="description" content="Прогноз мокрого асфальта на точке после 20:00, сборы и участники.">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0b0c0e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Medvedovka">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Manrope:wght@400;500;600;700;800&display=swap">
@@ -191,6 +199,47 @@ h2{letter-spacing:.02em}
 .eyebrow,.legend,.pill,.btn,.fsrc,.method summary,.meet-date .m,.meet-date .w,.specs dt,.who .nick,.car,.form label,.flags span,.dnums,.day .dname small,.bars .b em{font-weight:700}
 .mono,.dnums,.coords{font-variant-numeric:tabular-nums}
 .coords{font-weight:700}
+/* SOON */
+.soon{margin-top:22px;display:flex;flex-direction:column;gap:12px}
+.soon-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+.soon-sum{font-size:14px;color:var(--fg);max-width:60ch}
+.soon-sum b{color:var(--lamp)}
+.soon-grid{display:grid;grid-template-columns:repeat(var(--n,10),minmax(0,1fr));gap:4px;align-items:end}
+.sh{display:flex;flex-direction:column;align-items:center;gap:5px;min-width:0}
+.sh .col{position:relative;width:100%;height:72px;background:var(--surface);overflow:hidden}
+.sh .col .w{position:absolute;left:0;right:0;bottom:0;background:var(--go);opacity:.85}
+.sh .col .r{position:absolute;left:35%;right:35%;bottom:0;background:var(--fg)}
+.sh.win .col{box-shadow:inset 0 -2px 0 var(--lamp)}
+.sh .pc{font-size:12px;font-weight:700;font-variant-numeric:tabular-nums}
+.sh .hh{font-size:10px;font-weight:700;letter-spacing:.06em;color:var(--muted);font-variant-numeric:tabular-nums}
+.sh.win .hh{color:var(--lamp)}
+.soon-legend{display:flex;gap:16px;flex-wrap:wrap;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.soon-legend span{display:inline-flex;align-items:center;gap:6px}
+.soon-legend i{width:9px;height:9px;display:inline-block}
+.lg-wet{background:var(--go)} .lg-rain{background:var(--fg)} .lg-win{background:var(--lamp)}
+
+/* JOURNAL & RATING */
+.journal{margin-top:26px;display:flex;flex-direction:column;gap:12px}
+.jsum{font-size:15px}
+.jsum b{color:var(--lamp)}
+.jrow{display:flex;gap:4px;flex-wrap:wrap}
+.jd{display:flex;flex-direction:column;align-items:center;gap:4px;width:44px;padding:8px 0;border:1px solid var(--line);font-variant-numeric:tabular-nums}
+.jd b{font-size:13px}
+.jd span{font-size:10px;font-weight:700;color:var(--muted);letter-spacing:.04em}
+.jd i{width:10px;height:10px;display:block;background:var(--dry)}
+.jd i.wet{background:var(--go)}
+.jd.miss{border-color:var(--maybe)}
+.jlegend{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.rating{list-style:none;margin:0;padding:0;counter-reset:r}
+.rating li{display:grid;grid-template-columns:36px minmax(0,1fr) auto;gap:14px;align-items:center;padding:14px 0;border-bottom:1px solid var(--line)}
+.rating li::before{counter-increment:r;content:counter(r);font-family:var(--f-display);font-size:26px;color:var(--muted)}
+.rating li:first-child::before{color:var(--lamp)}
+.rating .nm{font-weight:700;font-size:16px;overflow-wrap:anywhere}
+.rating .bar{grid-column:2/3;height:4px;background:var(--surface);margin-top:6px}
+.rating .bar i{display:block;height:100%;background:var(--fg)}
+.rating .ct{text-align:right;white-space:nowrap;padding-right:2px;font-family:var(--f-display);font-size:30px;line-height:1;font-variant-numeric:tabular-nums}
+.rating .ct small{font-family:var(--f-body);font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);display:block;text-align:right}
+
 /* LOCK */
 body.locked main,body.locked .priv{display:none!important}
 body:not(.locked) .gate{display:none}
@@ -249,6 +298,11 @@ body.locked{padding-bottom:0}
     <div class="big wait" id="verdict-big">Ждём прогноз</div>
     <p id="verdictText">Загружаем осадки по точке спота.</p>
     <div class="hero-stats" id="heroStats"></div>
+    <div class="soon" id="soon" hidden>
+      <div class="soon-head"><span class="eyebrow">Ближайшие часы</span><span class="soon-sum" id="soonSum"></span></div>
+      <div class="soon-grid" id="soonGrid" role="img" aria-label="Шанс мокрого асфальта по часам"></div>
+      <div class="soon-legend"><span><i class="lg-wet"></i>мокрый асфальт</span><span><i class="lg-rain"></i>дождь</span><span><i class="lg-win"></i>окно 20–00</span></div>
+    </div>
   </section>
 
   <section id="meet" aria-labelledby="meet-h">
@@ -286,11 +340,16 @@ body.locked{padding-bottom:0}
         <li>Сайт сам скачивает прогноз осадков по точке спота у нескольких погодных моделей: ECMWF, ECMWF AIFS (нейросетевая), ICON и ICON-EU, GFS, UKMO, GEM. Каждая модель грузится отдельно, поэтому сбой одной не ломает остальные.</li>
         <li>Ансамбли ECMWF, GFS, ICON и GEM — это десятки расчётов одной модели с небольшими отклонениями. Доля расчётов, где вечер получается мокрым, и есть честная вероятность.</li>
         <li>Асфальт считается по балансу воды: дождь добавляет воду, испарение её убирает. Испарение берётся из прогноза и учитывает температуру, ветер, влажность и солнце. Ночью в безветрие асфальт после дневного дождя остаётся мокрым, в жару и ветер сохнет быстро.</li>
+        <li>Веса моделей подбираются автоматически: раз в неделю бот сравнивает прогнозы каждой модели за прошлый год с фактическими осадками на этой точке (реанализ ERA5) и даёт больший вес тем, кто чаще угадывал.</li>
         <li>Вечер мокрый, если вода на асфальте держится хотя бы 2 часа из окна 20:00–00:00. Итоговый шанс — 65% ансамбль и 35% обычные модели. «Едем» — от 60%, «Может быть» — от 30%.</li>
         <li>Таймер в шапке считает до 20:00 ближайшего вечера со статусом «Мокро · едем» (шанс от 60%). Дальше пяти дней прогноз осадков заметно менее точный.</li>
         <li>Погодные данные: <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a>, лицензия CC BY 4.0.</li>
       </ul>
     </details>
+    <div class="journal" id="journal">
+      <div class="eyebrow">Журнал точности · обещали / было</div>
+      <div id="journalBody"><p class="empty">Журнал заполняется сам: каждый день бот записывает прогноз, а через 6 дней сверяет его с фактическими осадками.</p></div>
+    </div>
   </section>
 
   <section id="crew" aria-labelledby="crew-h">
@@ -299,6 +358,13 @@ body.locked{padding-bottom:0}
       <button class="btn primary" id="addDriverBtn" hidden>Добавить дрифтера</button>
     </div>
     <div class="cards" id="cards"></div>
+  </section>
+
+  <section id="rating" aria-labelledby="rating-h">
+    <div class="sec-head">
+      <div><div class="eyebrow">По ответам «Еду» в опросах Telegram</div><h2 id="rating-h">Рейтинг выездов</h2></div>
+    </div>
+    <div id="ratingBody"><p class="empty" style="padding-top:20px">Рейтинг появится после первых опросов в чате.</p></div>
   </section>
 
   <section class="panel spot" aria-label="Точка сбора">
@@ -387,16 +453,21 @@ function filmAt(P,E,upto){ let f=0; for(let i=0;i<=upto;i++){ const p=P[i]||0; f
 function eveningWet(w,i){ let n=0; for(let k=0;k<W_LEN;k++){ const x=w[i+k]; if(x==null) return null; if(x) n++; } return n>=2; }
 
 let bundleMeta={det:0,ens:0,members:0};
+/* model weights and ensemble share come from data/calibration.json (built by the bot from past forecasts vs ERA5) */
+let CAL=null;
+const wOf=name=>{ const w=CAL&&CAL.weights&&CAL.weights[name]; return w==null?1:Math.max(0.05,+w); };
+const ENS_SHARE=()=>CAL&&CAL.ens_share!=null?+CAL.ens_share:0.65;
+const blend=(pe,pd)=>pe!=null&&pd!=null?ENS_SHARE()*pe+(1-ENS_SHARE())*pd:(pe??pd);
 function analyze(b){
   const mh=b&&b.main&&b.main.hourly; if(!mh||!mh.time) return null;
   const t=mh.time, n=t.length;
   const pick=k=>mh[k]||mh[k+"_best_match"]||null;
   const P=(pick("precipitation")||[]).map(v=>v==null?null:+v);
   const E=(pick("et0_fao_evapotranspiration")||[]).map(v=>v==null?0.05:+v);
-  const prob=pick("precipitation_probability"), temp=pick("temperature_2m"), wind=pick("wind_speed_10m");
-  const det=[{name:"Open-Meteo",w:wetSeries(P,E)}];
-  for(const [name,s] of (b.det||[])) if(s[0]) det.push({name,w:wetSeries(s[0],E)});
-  const ens=(b.ens||[]).map(([name,ss])=>({name,ws:ss.map(s=>wetSeries(s,E))})).filter(e=>e.ws.length>=5);
+  const temp=pick("temperature_2m"), wind=pick("wind_speed_10m");
+  const det=[{name:"Open-Meteo",P,w:wetSeries(P,E)}];
+  for(const [name,s] of (b.det||[])) if(s[0]) det.push({name,P:s[0],w:wetSeries(s[0],E)});
+  const ens=(b.ens||[]).map(([name,ss])=>({name,ss,ws:ss.map(s=>wetSeries(s,E))})).filter(e=>e.ws.length>=5);
   bundleMeta={det:det.length,ens:ens.length,members:ens.reduce((a,e)=>a+e.ws.length,0)};
   const v=(a,i)=>a&&a[i]!=null?+a[i]:null;
   const now=nowMsk(), out=[];
@@ -405,15 +476,13 @@ function analyze(b){
     const date=t[i].slice(0,10);
     if(date<now.date) continue;
     if(i+W_LEN>n) break;
-    // deterministic models
-    let dWet=0,dAll=0;
-    for(const d of det){ const r=eveningWet(d.w,i); if(r==null) continue; dAll++; if(r) dWet++; }
-    // ensembles: share of members per model, then mean across models
+    let dWet=0,dAll=0,ws=0,wt=0;
+    for(const d of det){ const r=eveningWet(d.w,i); if(r==null) continue; dAll++; const w=wOf(d.name); wt+=w; if(r){ dWet++; ws+=w; } }
     let eWet=0,eAll=0; const shares=[];
     for(const e of ens){ let a=0,w=0; for(const s of e.ws){ const r=eveningWet(s,i); if(r==null) continue; a++; if(r) w++; } if(a>=5){ shares.push(w/a); eWet+=w; eAll+=a; } }
-    const pDet=dAll?dWet/dAll:null, pEns=shares.length?shares.reduce((x,y)=>x+y,0)/shares.length:null;
+    const pDet=wt?ws/wt:null, pEns=shares.length?shares.reduce((x,y)=>x+y,0)/shares.length:null;
     if(pDet==null&&pEns==null) continue;
-    const p=pEns!=null&&pDet!=null?0.65*pEns+0.35*pDet:(pEns??pDet);
+    const p=blend(pEns,pDet);
     let rainIn=0,tMin=99,wMax=0;
     for(let k=0;k<W_LEN;k++){ rainIn+=v(P,i+k)||0; const tt=v(temp,i+k); if(tt!=null) tMin=Math.min(tMin,tt); wMax=Math.max(wMax,v(wind,i+k)||0); }
     const water=filmAt(P,E,i-1)+rainIn;
@@ -422,15 +491,16 @@ function analyze(b){
     out.push({date,p,pct:Math.round(p*100),dWet,dAll,eWet,eAll,wet:water,rainIn,tMin:tMin===99?null:tMin,wMax,status,hours,
       ice:tMin<=1&&p>=0.3,windy:wMax>=12,far:dayDiff(now.date,date)>5,isToday:date===now.date});
   }
-  // hourly chance of rain for the countdown
-  const hourly=t.map((tt,i)=>{
-    const sh=[];
-    for(const e of ens){ let a=0,w=0; for(const s of (b.ens.find(x=>x[0]===e.name)||[0,[]])[1]){ const x=s[i]; if(x==null) continue; a++; if(x>=WET_MM) w++; } if(a>=5) sh.push(w/a); }
-    let a=0,w=0; for(const s of [P,...(b.det||[]).map(d=>d[1][0]).filter(Boolean)]){ const x=s[i]; if(x==null) continue; a++; if(x>=WET_MM) w++; }
-    const pd=a?w/a:null, pe=sh.length?sh.reduce((x,y)=>x+y,0)/sh.length:null;
-    return {t:tt,p:pe!=null&&pd!=null?0.65*pe+0.35*pd:(pe??pd??0)};
+  // per hour: chance of rain, chance of wet asphalt, mean rain amount
+  out.hourly=t.map((tt,i)=>{
+    const shR=[],shW=[]; let mm=0,mn=0;
+    for(const e of ens){ let a=0,r=0,w=0; e.ss.forEach((s,j)=>{ const x=s[i]; if(x==null) return; a++; mm+=x; mn++; if(x>=WET_MM) r++; if(e.ws[j][i]) w++; }); if(a>=5){ shR.push(r/a); shW.push(w/a); } }
+    let rs=0,wsum=0,ws2=0;
+    for(const d of det){ const x=d.P[i]; if(x==null) continue; const w=wOf(d.name); wsum+=w; if(x>=WET_MM) rs+=w; if(d.w[i]) ws2+=w; }
+    const avg=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:null;
+    const mmDet=v(P,i);
+    return {t:tt,p:blend(avg(shR),wsum?rs/wsum:null)??0,wet:blend(avg(shW),wsum?ws2/wsum:null)??0,mm:mn?mm/mn:(mmDet??0)};
   });
-  out.hourly=hourly;
   return out;
 }
 
@@ -498,7 +568,34 @@ function renderHero(){
   chips.push('<span class="chip">Ветер <b>до '+Math.round(e.wMax)+' м/с</b></span>');
   if(e.ice) chips.push('<span class="chip warn">Гололёд</span>');
   stats.innerHTML=chips.join("");
+  renderSoon();
 }
+
+/* ---------- next hours ---------- */
+function renderSoon(){
+  const box=$("soon"), H=evenings&&evenings.hourly; if(!H){ box.hidden=true; return; }
+  const nowT=Date.now();
+  const start=H.findIndex(x=>new Date(x.t+":00+03:00").getTime()+3600e3>nowT);
+  if(start<0){ box.hidden=true; return; }
+  const n=innerWidth<520?8:12;
+  const hrs=H.slice(start,start+n); if(hrs.length<3){ box.hidden=true; return; }
+  const g=$("soonGrid"); g.style.setProperty("--n",hrs.length);
+  g.innerHTML=hrs.map(x=>{
+    const h=+x.t.slice(11,13), win=h>=W0&&h<W0+W_LEN, wp=Math.round(x.wet*100), rp=Math.round(x.p*100);
+    return '<div class="sh'+(win?" win":"")+'" title="'+x.t.slice(11,16)+': мокро '+wp+'%, дождь '+rp+'%, ~'+x.mm.toFixed(1)+' мм"><div class="col"><div class="w" style="height:'+wp+'%"></div><div class="r" style="height:'+rp+'%"></div></div><span class="pc">'+wp+'</span><span class="hh">'+String(h).padStart(2,"0")+'</span></div>';
+  }).join("");
+  const first=hrs.find(x=>x.p>=0.5);
+  const today=nowMsk().date, at20=H.find(x=>x.t===today+"T"+W0+":00");
+  let sum="";
+  if(first){ const hh=first.t.slice(11,16), day=first.t.slice(0,10)===today?"":" завтра"; sum="Дождь вероятен с <b>"+hh+day+"</b> (шанс "+Math.round(first.p*100)+"%)."; }
+  else sum="В ближайшие часы уверенного дождя нет.";
+  const cur=hrs[0], ch=+cur.t.slice(11,13);
+  if(cur.t.slice(0,10)===today&&ch>=W0&&ch<W0+W_LEN) sum+=" Сейчас асфальт мокрый с шансом <b>"+Math.round(cur.wet*100)+"%</b>.";
+  else if(at20&&new Date(at20.t+":00+03:00").getTime()>nowT) sum+=" К 20:00 асфальт мокрый с шансом <b>"+Math.round(at20.wet*100)+"%</b>.";
+  $("soonSum").innerHTML=sum;
+  box.hidden=false;
+}
+addEventListener("resize",()=>{ if(evenings) renderSoon(); });
 
 /* ---------- countdown to first rain ---------- */
 let rainAt=null, rainEnd=null, rainKnown=false, rainP=0;
@@ -559,10 +656,21 @@ function applyBundle(b){
   const a=analyze(b); if(!a||!a.length) return false;
   evenings=a; liveOk=true; setRainFrom(a);
   const m=bundleMeta;
-  fcMeta="Open-Meteo: "+m.det+" "+(m.det===1?"модель":m.det<5?"модели":"моделей")+(m.members?" и "+m.members+" ансамблевых расчётов ("+m.ens+" ансамбля)":"")+" · обновлено в "+stamp()+" МСК";
+  fcMeta="Open-Meteo: "+m.det+" "+(m.det===1?"модель":m.det<5?"модели":"моделей")+(m.members?" и "+m.members+" ансамблевых расчётов ("+m.ens+" ансамбля)":"")+(CAL&&CAL.weights?" · веса настроены по истории":"")+" · обновлено в "+stamp()+" МСК";
   renderForecast(); return true;
 }
+const calP=fetch("data/calibration.json?v="+Math.floor(Date.now()/36e5),{cache:"no-cache"}).then(r=>r.ok?r.json():null).catch(()=>null).then(c=>{ CAL=c&&typeof c==="object"?c:null; renderJournal(); });
+function renderJournal(){
+  const J=CAL&&CAL.journal, body=$("journalBody"); if(!J||!J.length) return;
+  const v=CAL.verified||{};
+  const items=J.slice(-14);
+  body.innerHTML=(v.n?'<div class="jsum">Уверенные прогнозы (от 60% или до 30%) совпали <b>'+v.hits+' из '+v.n+'</b> раз.</div>':'')+
+    '<div class="jrow">'+items.map(x=>{ const said=x.pct>=60?true:x.pct<30?false:null; const miss=said!==null&&said!==x.wet;
+      return '<div class="jd'+(miss?" miss":"")+'" title="'+x.date+': обещали '+x.pct+'%, было '+(x.wet?"мокро":"сухо")+'"><span>'+x.date.slice(8)+'.'+x.date.slice(5,7)+'</span><b>'+x.pct+'%</b><i class="'+(x.wet?"wet":"")+'"></i></div>'; }).join("")+'</div>'+
+    '<div class="jlegend">Число — обещанный шанс в день вечера · квадрат: зелёный — было мокро, серый — сухо · жёлтая рамка — промах</div>';
+}
 async function loadLive(){
+  await calP;
   const main=await getJSON(MAIN_URL); if(!main) return false;
   const times=main.hourly.time;
   applyBundle({main,det:[],ens:[]});
@@ -624,10 +732,26 @@ async function openVault(code){
     const raw=await crypto.subtle.decrypt({name:"AES-GCM",iv:unb64(e.iv)},kek,unb64(e.ct));
     const K=await crypto.subtle.importKey("raw",raw,"AES-GCM",false,["decrypt"]);
     const pt=await crypto.subtle.decrypt({name:"AES-GCM",iv:unb64(v.payload.iv)},K,unb64(v.payload.ct));
+    return {data:JSON.parse(new TextDecoder().decode(pt)),K};
+  }catch(_){ return null; }
+}
+async function loadStats(K){
+  try{
+    const r=await fetch("crew/stats.json?v="+Date.now(),{cache:"no-store"}); if(!r.ok) return null;
+    const box=await r.json();
+    const pt=await crypto.subtle.decrypt({name:"AES-GCM",iv:unb64(box.iv)},K,unb64(box.ct));
     return JSON.parse(new TextDecoder().decode(pt));
   }catch(_){ return null; }
 }
-function showPrivate(d){
+function renderRating(st){
+  const body=$("ratingBody");
+  const ppl=Object.values((st&&st.people)||{}).map(p=>({name:p.name,n:(p.dates||[]).length,last:(p.dates||[]).slice(-1)[0]})).filter(p=>p.n>0).sort((a,b)=>b.n-a.n||(b.last||"").localeCompare(a.last||""));
+  if(!ppl.length) return;
+  const max=ppl[0].n;
+  body.innerHTML='<ol class="rating">'+ppl.map(p=>'<li><div><div class="nm">'+esc(p.name)+'</div><div class="bar"><i style="width:'+Math.round(p.n/max*100)+'%"></i></div></div><div class="ct">'+p.n+'<small>'+(p.n%10===1&&p.n%100!==11?"выезд":p.n%10>=2&&p.n%10<=4&&(p.n%100<10||p.n%100>=20)?"выезда":"выездов")+'</small></div></li>').join("")+'</ol>';
+}
+function showPrivate(r){
+  const d=r.data; loadStats(r.K).then(renderRating);
   if(d.crewName) $("crewName").textContent=String(d.crewName);
   meets=(d.meets||[]).map((m,i)=>({id:"m"+i,...m}));
   drivers=(d.drivers||[]).map((x,i)=>({id:"d"+i,...x}));
@@ -796,6 +920,7 @@ $("copyCoords").onclick=async()=>{
 setInterval(()=>{ if(liveOk) loadLive(); else renderHero(); },30*60*1000);
 setInterval(renderHero,60*1000);
 init();
+if("serviceWorker" in navigator&&location.protocol==="https:") navigator.serviceWorker.register("sw.js").catch(()=>{});
 })();
 </script>
 

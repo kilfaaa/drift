@@ -11,6 +11,8 @@
   python3 tools/crew.py add    --code АДМИН-КОД --name "Имя"       выдать код новому человеку
   python3 tools/crew.py revoke --code АДМИН-КОД --name "Имя"       забрать доступ (меняет ключ)
   python3 tools/crew.py list   --code АДМИН-КОД                    кто имеет доступ
+  python3 tools/crew.py show   --code АДМИН-КОД --name "Имя"       показать код человека
+  Бот: имя __bot__, его код хранится в секрете CREW_BOT_CODE на GitHub.
 
 Формат совместим с WebCrypto в index.html: PBKDF2-SHA256 -> AES-256-GCM (iv 12 байт).
 """
@@ -23,6 +25,7 @@ from cryptography.hazmat.primitives import hashes
 ROOT = Path(__file__).resolve().parent.parent
 VAULT = ROOT / "crew" / "vault.json"
 ADMIN = ROOT / "crew" / "admin.json"
+STATS = ROOT / "crew" / "stats.json"   # статистика выездов (бот), шифруется тем же ключом
 PLAIN = ROOT / "plain"
 ITER = 250_000
 ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789"
@@ -71,6 +74,14 @@ def write_vault(K, codes):
     keys = [wrap(K, c) for c in codes.values()]
     save(VAULT, {"v": 1, "iter": ITER, "keys": keys, "payload": seal_bytes(K, build_payload())})
 
+def read_vault(code):
+    """Ключ данных и расшифрованные данные по любому коду из vault."""
+    K = key_from(code); return K, json.loads(open_bytes(K, load(VAULT)["payload"]))
+def read_stats(K):
+    return json.loads(open_bytes(K, load(STATS))) if STATS.exists() else {"people": {}}
+def write_stats(K, stats):
+    save(STATS, seal_bytes(K, json.dumps(stats, ensure_ascii=False).encode()))
+
 def cmd_init(a):
     if VAULT.exists(): sys.exit("vault.json уже есть — используй add/revoke")
     admin = a.admin or new_code()
@@ -105,18 +116,24 @@ def cmd_revoke(a):
     codes = admin_codes(a.code)
     if a.name not in codes or a.name == ADMIN_LABEL: sys.exit("Нет такого человека")
     K = key_from(a.code); data = open_bytes(K, load(VAULT)["payload"])
+    stats = read_stats(K)
     del codes[a.name]; K2 = secrets.token_bytes(32)
     save(VAULT, {"v": 1, "iter": ITER, "keys": [wrap(K2, c) for c in codes.values()], "payload": seal_bytes(K2, data)})
+    if STATS.exists(): write_stats(K2, stats)
     save_admin(a.code, codes); print("Доступ отозван:", a.name)
 
 def cmd_list(a):
     for n in admin_codes(a.code): print("АДМИН" if n == ADMIN_LABEL else n)
 
+def cmd_show(a):
+    """Показать код человека (нужен код админа)."""
+    codes = admin_codes(a.code); print(codes.get(a.name) or "Нет такого имени")
+
 if __name__ == "__main__":
     p = argparse.ArgumentParser(); s = p.add_subparsers(dest="cmd", required=True)
-    for n in ("init", "unlock", "seal", "add", "revoke", "list"):
+    for n in ("init", "unlock", "seal", "add", "revoke", "list", "show"):
         q = s.add_parser(n)
         if n == "init": q.add_argument("--admin"); q.add_argument("--people", default="")
         else: q.add_argument("--code", required=True)
-        if n in ("add", "revoke"): q.add_argument("--name", required=True)
+        if n in ("add", "revoke", "show"): q.add_argument("--name", required=True)
     a = p.parse_args(); globals()["cmd_" + a.cmd](a)
