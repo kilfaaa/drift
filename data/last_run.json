@@ -1,9 +1,8 @@
 {
  "updates": [
-  "poll_answer:-:",
-  "message:group:"
+  "poll_answer:-:"
  ],
- "at": "2026-10-23T23:30",
+ "at": "2026-10-24T02:24",
  "mode": "auto",
  "slot": "collect",
  "telegram": true,
