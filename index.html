@@ -199,6 +199,19 @@ h2{letter-spacing:.02em}
 .eyebrow,.legend,.pill,.btn,.fsrc,.method summary,.meet-date .m,.meet-date .w,.specs dt,.who .nick,.car,.form label,.flags span,.dnums,.day .dname small,.bars .b em{font-weight:700}
 .mono,.dnums,.coords{font-variant-numeric:tabular-nums}
 .coords{font-weight:700}
+/* SPOT TABS */
+.spots{display:inline-flex;border:1px solid rgba(236,236,234,.35);background:rgba(11,12,14,.5);backdrop-filter:blur(6px);max-width:100%}
+.spots button{display:inline-flex;align-items:center;gap:8px;background:transparent;border:0;cursor:pointer;color:rgba(236,236,234,.75);padding:9px 14px;font:inherit;font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;white-space:nowrap}
+.spots button+button{border-left:1px solid rgba(236,236,234,.35)}
+.spots button[aria-selected="true"]{background:var(--fg);color:var(--bg)}
+.spots b{font-variant-numeric:tabular-nums;color:var(--muted);font-weight:800}
+.spots b.go{color:var(--go)} .spots b.maybe{color:var(--maybe)}
+.spots button[aria-selected="true"] b{color:var(--bg)}
+.spots button[aria-selected="true"] b.go::before,.spots button[aria-selected="true"] b.maybe::before{content:"";display:inline-block;width:7px;height:7px;margin-right:5px;vertical-align:1px;background:var(--go)}
+.spots button[aria-selected="true"] b.maybe::before{background:var(--maybe)}
+.alt{display:inline-block;margin-top:4px;background:none;border:0;padding:0;cursor:pointer;color:var(--go);font:inherit;font-weight:700;text-decoration:underline;text-underline-offset:3px}
+@media (max-width:420px){.spots button{padding:8px 10px;letter-spacing:.08em;font-size:11px}}
+
 /* SOON */
 .soon{margin-top:22px;display:flex;flex-direction:column;gap:12px}
 .soon-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
@@ -267,10 +280,14 @@ body.locked{padding-bottom:0}
   <div class="hero-in">
     <div class="crew">
       <div class="crew-name" id="crewName">coffeeGaysClub</div>
-      <a class="priv" href="https://yandex.ru/maps/?whatshere%5Bzoom%5D=18&amp;whatshere%5Bpoint%5D=39.025310,45.383020" target="_blank" rel="noopener">45.383020, 39.025310</a>
+      <a class="priv" id="coordLink" href="https://yandex.ru/maps/?whatshere%5Bzoom%5D=18&amp;whatshere%5Bpoint%5D=39.025310,45.383020" target="_blank" rel="noopener">45.383020, 39.025310</a>
       <button class="linkbtn priv" id="logout" type="button">Выйти</button>
     </div>
     <div class="hero-center">
+      <div class="spots" id="spots" role="tablist" aria-label="Точка">
+        <button type="button" role="tab" data-spot="medvedovka" aria-selected="true">Medvedovka<b></b></button>
+        <button type="button" role="tab" data-spot="krasnaya" aria-selected="false">Красная площадь<b></b></button>
+      </div>
       <h1 class="spot-name" id="spot-h">Medvedovka</h1>
       <div class="timer" id="timer" role="timer" aria-live="off">
         <div class="u"><div class="n" data-u="d"><span>0</span><span>0</span></div><small>дни</small></div><div class="sep">:</div>
@@ -333,7 +350,7 @@ body.locked{padding-bottom:0}
       </div>
     </div>
     <div class="days" id="days"><div class="fstate"><p>Загружаем прогноз…</p></div></div>
-    <div class="fsrc"><span id="fcSource"></span><a href="https://yandex.ru/pogoda/maps/nowcast?lat=45.38302&amp;lon=39.02531&amp;z=10" target="_blank" rel="noopener">Радар осадков над спотом сейчас →</a></div>
+    <div class="fsrc"><span id="fcSource"></span><a id="radarLink" href="https://yandex.ru/pogoda/maps/nowcast?lat=45.38302&amp;lon=39.02531&amp;z=10" target="_blank" rel="noopener">Радар осадков над спотом сейчас →</a></div>
     <details class="method">
       <summary>Как считается прогноз</summary>
       <ul>
@@ -368,10 +385,10 @@ body.locked{padding-bottom:0}
   </section>
 
   <section class="panel spot" aria-label="Точка сбора">
-    <div><div class="eyebrow">Дрифт-спот</div><div class="coords mono" id="coords">45.383020, 39.025310</div></div>
+    <div><div class="eyebrow" id="spotEyebrow">Дрифт-спот · Медведовка</div><div class="coords mono" id="coords">45.383020, 39.025310</div></div>
     <div class="meet-row">
       <button class="btn" id="copyCoords" type="button">Скопировать координаты</button>
-      <a class="btn primary" href="https://yandex.ru/maps/?rtext=~45.383020%2C39.025310&amp;rtt=auto" target="_blank" rel="noopener">Маршрут в Яндекс Картах</a>
+      <a class="btn primary" id="routeLink" href="https://yandex.ru/maps/?rtext=~45.383020%2C39.025310&amp;rtt=auto" target="_blank" rel="noopener">Маршрут в Яндекс Картах</a>
     </div>
   </section>
 </main>
@@ -402,7 +419,7 @@ body.locked{padding-bottom:0}
 <script>
 (function(){
 "use strict";
-const LAT=45.38302, LON=39.02531, TZ="Europe/Moscow";
+const TZ="Europe/Moscow";
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 
@@ -423,8 +440,12 @@ const dayDiff=(a,b)=>Math.round((new Date(b+"T00:00:00Z")-new Date(a+"T00:00:00Z
    - DET: separate deterministic models, each fetched on its own so one bad model never breaks the rest
    - ENS: ensemble runs (dozens of perturbed members per model) for an honest probability
    Wet asphalt is a water balance: rain adds water, evaporation removes it. */
-const OM="latitude="+LAT+"&longitude="+LON+"&timezone=Europe%2FMoscow&past_days=1&forecast_days=14";
-const MAIN_URL="https://api.open-meteo.com/v1/forecast?"+OM+
+const SPOTS=[
+  {id:"medvedovka",title:"Medvedovka",ru:"Медведовка",lat:45.383020,lon:39.025310},
+  {id:"krasnaya",title:"Krasnaya Ploshchad",ru:"Красная площадь",lat:45.102440,lon:38.991828}];
+let SPOT=SPOTS[0]; const DATA={};
+const omq=sp=>"latitude="+sp.lat+"&longitude="+sp.lon+"&timezone=Europe%2FMoscow&past_days=1&forecast_days=14";
+const mainUrl=sp=>"https://api.open-meteo.com/v1/forecast?"+omq(sp)+
   "&hourly=precipitation,precipitation_probability,temperature_2m,wind_speed_10m,et0_fao_evapotranspiration&wind_speed_unit=ms";
 const DET_MODELS=[["ecmwf_ifs025","ECMWF"],["ecmwf_aifs025_single","ECMWF AIFS"],["icon_seamless","ICON"],["icon_eu","ICON-EU"],
   ["gfs_seamless","GFS"],["ukmo_seamless","UKMO"],["gem_seamless","GEM"]];
@@ -556,7 +577,10 @@ function renderHero(){
   else if(e.status==="maybe") line="Шанс мокрого асфальта <b>"+e.pct+"%</b>, модели расходятся: "+who+". Ближе к вечеру глянь радар.";
   else line="Шанс мокрого асфальта всего <b>"+e.pct+"%</b>, будет сухо.";
   if(e.status!=="go") line+= g?" Ближайший мокрый вечер — <b>"+(g.isToday?"сегодня":ruDay(g.date))+"</b>.":" Мокрых вечеров в ближайшие 14 дней пока не видно.";
+  const other=SPOTS.find(x=>x!==SPOT), oe=DATA[other.id]&&DATA[other.id].evenings&&DATA[other.id].evenings[0];
+  if(e.status!=="go"&&oe&&oe.status==="go"&&oe.date===e.date) line+='<br><button type="button" class="alt" id="altSpot">'+(other.id==="krasnaya"?"На Красной площади":"На Медведовке")+' мокро '+oe.pct+'% →</button>';
   txt.innerHTML=line;
+  const alt=$("altSpot"); if(alt) alt.onclick=()=>{ setSpot(other.id,true); scrollTo({top:0,behavior:"smooth"}); };
   const chips=[];
   if(g){
     const days=dayDiff(now.date,g.date);
@@ -652,12 +676,16 @@ async function getJSON(url,ms){
 }
 const getWithFallback=(url,ms)=>getJSON(url,ms).then(j=>j||getJSON(url.replace("&past_days=1",""),ms));
 function stamp(){ const n=nowMsk(); return String(n.hour).padStart(2,"0")+":"+String(n.min).padStart(2,"0"); }
-function applyBundle(b){
+function applyBundle(b,sp){
   const a=analyze(b); if(!a||!a.length) return false;
-  evenings=a; liveOk=true; setRainFrom(a);
+  liveOk=true;
   const m=bundleMeta;
-  fcMeta="Open-Meteo: "+m.det+" "+(m.det===1?"модель":m.det<5?"модели":"моделей")+(m.members?" и "+m.members+" ансамблевых расчётов ("+m.ens+" ансамбля)":"")+(CAL&&CAL.weights?" · веса настроены по истории":"")+" · обновлено в "+stamp()+" МСК";
-  renderForecast(); return true;
+  const meta="Open-Meteo: "+m.det+" "+(m.det===1?"модель":m.det<5?"модели":"моделей")+(m.members?" и "+m.members+" ансамблевых расчётов ("+m.ens+" ансамбля)":"")+(CAL&&CAL.weights?" · веса настроены по истории":"")+" · обновлено в "+stamp()+" МСК";
+  DATA[sp.id]={evenings:a,meta};
+  renderTabs();
+  if(sp===SPOT){ evenings=a; fcMeta=meta; setRainFrom(a); renderForecast(); renderMeets(); }
+  else if(SPOT.id!==sp.id) renderHero();
+  return true;
 }
 const calP=fetch("data/calibration.json?v="+Math.floor(Date.now()/36e5),{cache:"no-cache"}).then(r=>r.ok?r.json():null).catch(()=>null).then(c=>{ CAL=c&&typeof c==="object"?c:null; renderJournal(); });
 function renderJournal(){
@@ -669,20 +697,45 @@ function renderJournal(){
       return '<div class="jd'+(miss?" miss":"")+'" title="'+x.date+': обещали '+x.pct+'%, было '+(x.wet?"мокро":"сухо")+'"><span>'+x.date.slice(8)+'.'+x.date.slice(5,7)+'</span><b>'+x.pct+'%</b><i class="'+(x.wet?"wet":"")+'"></i></div>'; }).join("")+'</div>'+
     '<div class="jlegend">Число — обещанный шанс в день вечера · квадрат: зелёный — было мокро, серый — сухо · жёлтая рамка — промах</div>';
 }
-async function loadLive(){
+async function loadLive(sp){
+  sp=sp||SPOT;
   await calP;
-  const main=await getJSON(MAIN_URL); if(!main) return false;
+  const OM=omq(sp);
+  const main=await getJSON(mainUrl(sp)); if(!main) return false;
   const times=main.hourly.time;
-  applyBundle({main,det:[],ens:[]});
+  applyBundle({main,det:[],ens:[]},sp);
   const [dets,enss]=await Promise.all([
     Promise.all(DET_MODELS.map(([m,name])=>getJSON("https://api.open-meteo.com/v1/forecast?"+OM+"&hourly=precipitation&models="+m).then(j=>j&&[name,align(j,times)]))),
     Promise.all(ENS_MODELS.map(([m,name])=>getWithFallback("https://ensemble-api.open-meteo.com/v1/ensemble?"+OM+"&hourly=precipitation&models="+m,20000).then(j=>j&&[name,align(j,times)])))
   ]);
-  applyBundle({main,det:dets.filter(x=>x&&x[1].length),ens:enss.filter(x=>x&&x[1].length)});
+  applyBundle({main,det:dets.filter(x=>x&&x[1].length),ens:enss.filter(x=>x&&x[1].length)},sp);
   return true;
 }
+const loadAll=()=>Promise.all(SPOTS.map(loadLive));
+function renderTabs(){
+  document.querySelectorAll("#spots button").forEach(btn=>{
+    const id=btn.dataset.spot, d=DATA[id], e=d&&d.evenings&&d.evenings[0];
+    btn.setAttribute("aria-selected",String(id===SPOT.id));
+    const b=btn.querySelector("b"); b.className=e?e.status:""; b.textContent=e?e.pct+"%":"";
+  });
+}
+function setSpot(id,push){
+  const sp=SPOTS.find(s=>s.id===id)||SPOTS[0]; SPOT=sp;
+  const ll=sp.lat.toFixed(6)+", "+sp.lon.toFixed(6);
+  $("spot-h").textContent=sp.title;
+  $("coordLink").textContent=ll; $("coordLink").href="https://yandex.ru/maps/?whatshere%5Bzoom%5D=18&whatshere%5Bpoint%5D="+sp.lon.toFixed(6)+","+sp.lat.toFixed(6);
+  $("coords").textContent=ll; $("spotEyebrow").textContent="Дрифт-спот · "+sp.ru;
+  $("routeLink").href="https://yandex.ru/maps/?rtext=~"+sp.lat.toFixed(6)+"%2C"+sp.lon.toFixed(6)+"&rtt=auto";
+  $("radarLink").href="https://yandex.ru/pogoda/maps/nowcast?lat="+sp.lat+"&lon="+sp.lon+"&z=10";
+  const d=DATA[sp.id];
+  evenings=d?d.evenings:null; fcMeta=d?d.meta:"Загружаем прогноз…";
+  if(evenings) setRainFrom(evenings); else { rainKnown=false; ["d","h","m","s"].forEach(u=>setUnit(u,0)); $("timerLabel").textContent="загружаем прогноз…"; }
+  renderTabs(); renderForecast(); renderMeets(); fitHero();
+  if(push){ try{ history.replaceState(null,"",sp.id===SPOTS[0].id?location.pathname:"#"+sp.id); }catch(_){} }
+}
+document.querySelectorAll("#spots button").forEach(b=>b.addEventListener("click",()=>setSpot(b.dataset.spot,true)));
 function useStored(doc){
-  if(liveOk||!doc||!doc.data) return;
+  if(liveOk||!doc||!doc.data||SPOT!==SPOTS[0]) return;
   const a=analyze({main:doc.data,det:[],ens:[]}); if(!a) return;
   evenings=a; setRainFrom(a);
   fcMeta="Прогноз Open-Meteo"; renderForecast();
@@ -694,7 +747,8 @@ let meets=[],rsvps=[],drivers=[],names={},hosted=false;
 
 async function init(){
   renderForecast();
-  const live=loadLive();
+  if(location.hash==="#krasnaya") setSpot("krasnaya");
+  const live=loadAll();
   if(!window.claude||!claude.use){ await loadStatic(); await live; if(!liveOk) fcMeta="Не удалось загрузить прогноз. Обнови страницу позже."; renderForecast(); return; }
   [db,user]=await Promise.all([claude.use("db"),claude.use("user")]);
   claude.use("assets").then(a=>{assets=a; if(!a) $("photoWrap").hidden=true;});
@@ -794,18 +848,18 @@ function renderMeets(){
     panel.innerHTML='<p class="empty">Сбор пока не объявлен.'+(g?' По прогнозу ближайший мокрый вечер — <b style="color:var(--fg)">'+(g.isToday?"сегодня":ruDay(g.date))+'</b>.':'')+(canWrite?' Нажми «Объявить сбор», дата подставится сама.':'')+'</p>';
     return;
   }
-  const m=up[0], ev=evenings&&evenings.find(e=>e.date===m.date);
+  const m=up[0], msp=SPOTS.find(s=>s.id===(m.spot||"medvedovka"))||SPOTS[0], md=DATA[msp.id], ev=md&&md.evenings&&md.evenings.find(e=>e.date===m.date);
   const going=rsvps.filter(r=>Array.isArray(r.going)&&r.going.includes(m.id));
   const me=uid&&going.some(r=>r.id===uid);
   panel.innerHTML='<div class="meet">'+
     '<div class="meet-date"><div class="m">'+esc(ruMonth(m.date))+'</div><div class="d">'+Number(m.date.slice(8))+'</div><div class="w">'+esc(ruWeek(m.date))+'</div></div>'+
     '<div class="meet-body">'+
-      '<h3>Сбор в <span class="mono" style="color:var(--sodium)">'+esc(m.time||"20:00")+'</span> на споте</h3>'+
+      '<h3>Сбор в <span class="mono" style="color:var(--sodium)">'+esc(m.time||"20:00")+'</span> · '+esc(msp.ru)+'</h3>'+
       (ev?'<div><span class="pill '+ev.status+'">'+LABEL[ev.status]+'</span> <span class="msg">вода '+ev.wet.toFixed(1)+' мм · шанс '+ev.pct+'%</span></div>':'')+
       (m.note?'<p class="meet-note">'+esc(m.note)+'</p>':'')+
       '<div class="meet-row">'+
         (uid&&canWrite?'<button class="btn '+(me?"":"primary")+'" id="rsvpBtn">'+(me?"Я не еду":"Я еду")+'</button>':'')+
-        '<a class="btn" href="https://yandex.ru/maps/?rtext=~45.383020%2C39.025310&amp;rtt=auto" target="_blank" rel="noopener">Маршрут</a>'+
+        '<a class="btn" href="https://yandex.ru/maps/?rtext=~'+msp.lat.toFixed(6)+'%2C'+msp.lon.toFixed(6)+'&amp;rtt=auto" target="_blank" rel="noopener">Маршрут</a>'+
         (canWrite?(confirmDel===m.id?'<span class="confirm">Отменить сбор? <button class="btn" id="delYes">Да, отменить</button><button class="btn ghost" id="delNo">Нет</button></span>':'<button class="btn ghost" id="delMeet">Отменить сбор</button>'):'')+
       '</div>'+
       (hosted?'':'<div><div class="eyebrow" style="margin-bottom:6px">Едут: '+going.length+'</div><div class="going">'+(going.length?going.map(r=>'<span>'+esc(names[r.id]||"Дрифтер")+'</span>').join(""):'<span style="background:transparent;color:var(--muted);padding:0">Пока никто не отметился</span>')+'</div></div>')+
@@ -911,13 +965,13 @@ $("driverForm").addEventListener("submit",async ev=>{
 /* ---------- spot ---------- */
 $("copyCoords").onclick=async()=>{
   const b=$("copyCoords");
-  try{ await navigator.clipboard.writeText("45.383020, 39.025310"); b.textContent="Скопировано"; }
+  try{ await navigator.clipboard.writeText($("coords").textContent); b.textContent="Скопировано"; }
   catch(_){ const r=document.createRange(); r.selectNodeContents($("coords")); const s=getSelection(); s.removeAllRanges(); s.addRange(r); b.textContent="Выделено, скопируй"; }
   setTimeout(()=>b.textContent="Скопировать координаты",2000);
 };
 
 
-setInterval(()=>{ if(liveOk) loadLive(); else renderHero(); },30*60*1000);
+setInterval(()=>{ if(liveOk) loadAll(); else renderHero(); },30*60*1000);
 setInterval(renderHero,60*1000);
 init();
 if("serviceWorker" in navigator&&location.protocol==="https:") navigator.serviceWorker.register("sw.js").catch(()=>{});

@@ -12,12 +12,12 @@ import urllib.parse
 import urllib.request
 from datetime import datetime, timedelta, timezone
 
-LAT, LON = 45.38302, 39.02531
+LAT, LON = 45.38302, 39.02531   # основной спот (журнал и подстройка считаются по нему)
+SPOTS = {"medvedovka": ("Медведовка", 45.383020, 39.025310), "krasnaya": ("Красная площадь", 45.102440, 38.991828)}
 MSK = timezone(timedelta(hours=3))
 TZ_Q = "Europe%2FMoscow"
-OM = f"latitude={LAT}&longitude={LON}&timezone={TZ_Q}&past_days=1&forecast_days=14"
-MAIN_URL = ("https://api.open-meteo.com/v1/forecast?" + OM +
-            "&hourly=precipitation,precipitation_probability,temperature_2m,wind_speed_10m,et0_fao_evapotranspiration&wind_speed_unit=ms")
+def om(lat, lon):
+    return f"latitude={lat}&longitude={lon}&timezone={TZ_Q}&past_days=1&forecast_days=14"
 DET_MODELS = [("ecmwf_ifs025", "ECMWF"), ("ecmwf_aifs025_single", "ECMWF AIFS"), ("icon_seamless", "ICON"), ("icon_eu", "ICON-EU"),
               ("gfs_seamless", "GFS"), ("ukmo_seamless", "UKMO"), ("gem_seamless", "GEM")]
 ENS_MODELS = [("ecmwf_ifs025", "ECMWF ENS"), ("gfs_seamless", "GFS ENS"), ("icon_seamless", "ICON ENS"), ("gem_global", "GEM ENS")]
@@ -111,8 +111,11 @@ def evening_wet(w, i):
     return n >= 2
 
 
-def fetch_bundle():
-    main = get_json(MAIN_URL)
+def fetch_bundle(spot: str = "medvedovka"):
+    _, lat, lon = SPOTS[spot]
+    OM = om(lat, lon)
+    main = get_json("https://api.open-meteo.com/v1/forecast?" + OM +
+                    "&hourly=precipitation,precipitation_probability,temperature_2m,wind_speed_10m,et0_fao_evapotranspiration&wind_speed_unit=ms")
     if not main:
         return None
     times = main["hourly"]["time"]

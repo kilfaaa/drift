@@ -153,7 +153,7 @@ def with_joke(st: dict, vault: "Vault", text: str) -> str:
     return f"{text}\n\n🖤 {lst[(n // len(people)) % len(lst)]}"
 
 
-def send_poll(tg: TG, st: dict, text: str, question: str, date: str, kind: str, vault: "Vault | None" = None):
+def send_poll(tg: TG, st: dict, text: str, question: str, date: str, kind: str, vault: "Vault | None" = None, spot: str = "medvedovka"):
     chat = st.get("chat_id")
     if not chat:
         return False
@@ -162,7 +162,7 @@ def send_poll(tg: TG, st: dict, text: str, question: str, date: str, kind: str, 
     tg.call("sendMessage", chat_id=chat, text=text, disable_web_page_preview=True)
     m = tg.call("sendPoll", chat_id=chat, question=question, options=[{"text": "Еду"}, {"text": "Не еду"}], is_anonymous=False)
     if m and m.get("poll"):
-        st.setdefault("polls", {})[m["poll"]["id"]] = {"date": date, "kind": kind}
+        st.setdefault("polls", {})[m["poll"]["id"]] = {"date": date, "kind": kind, "spot": spot}
         return True
     return False
 
@@ -177,17 +177,28 @@ def evening_line(e) -> str:
     return s
 
 
-def notify(tg: TG, st: dict, vault: Vault, ev: list, slot: str):
+def notify(tg: TG, st: dict, vault: Vault, evs: dict, slot: str):
     chat = st.get("chat_id")
     if not tg.token or not chat:
         return
     if not st.get("hello"):
-        tg.call("sendMessage", chat_id=chat, text="Я на месте. Буду писать сюда, когда на Медведовке после 20:00 будет мокро, и присылать опросы «Еду / Не еду».\n" + SITE)
+        tg.call("sendMessage", chat_id=chat, text="Я на месте. Буду писать сюда, когда на Медведовке после 20:00 будет мокро (или на Красной площади, если на Медведовке сухо), и присылать опросы «Еду / Не еду».\n" + SITE)
         st["hello"] = True
     today = E.now_msk().strftime("%Y-%m-%d")
     tomorrow = (E.now_msk() + timedelta(days=1)).strftime("%Y-%m-%d")
-    by_date = {e["date"]: e for e in ev}
-    polled = {p["date"] for p in st.get("polls", {}).values()}
+    by = {sp: {e["date"]: e for e in ev} for sp, ev in evs.items()}
+    M, K = by.get("medvedovka", {}), by.get("krasnaya", {})
+    polls = st.get("polls", {})
+    polled = {p["date"] for p in polls.values() if p.get("kind") != "test"}
+
+    def pick(d):
+        """Куда ехать в этот вечер: Медведовка, если там мокро, иначе запасная Красная площадь."""
+        m, k = M.get(d), K.get(d)
+        if m and m["status"] == "go":
+            return "medvedovka", m, k
+        if k and k["status"] == "go":
+            return "krasnaya", k, m
+        return None, m, k
 
     # новые сборы
     ann = st.setdefault("announced", [])
@@ -195,26 +206,43 @@ def notify(tg: TG, st: dict, vault: Vault, ev: list, slot: str):
         key = f"{m.get('date')} {m.get('time', '20:00')}"
         if not m.get("date") or m["date"] < today or key in ann:
             continue
-        e = by_date.get(m["date"])
-        text = f"Сбор: {ru_date(m['date'])}, {m.get('time', '20:00')}, Медведовка."
+        sp = m.get("spot") or "medvedovka"
+        e = by.get(sp, {}).get(m["date"])
+        text = f"Сбор: {ru_date(m['date'])}, {m.get('time', '20:00')}, {E.SPOTS[sp][0]}."
         if m.get("note"):
             text += f"\n{m['note']}"
         if e:
             text += f"\nПрогноз на вечер: {evening_line(e)}."
         text += f"\n{SITE}"
-        if send_poll(tg, st, text, f"Едешь на сбор {ru_date(m['date'])}?", m["date"], "meet", vault):
+        if send_poll(tg, st, text, f"Едешь на сбор {ru_date(m['date'])}?", m["date"], "meet", vault, sp):
             ann.append(key); polled.add(m["date"])
 
-    e = by_date.get(today)
-    if slot in ("noon", "evening") and e and e["status"] == "go" and today not in polled:
-        lead = "Сегодня после 20:00 на Медведовке" if slot == "noon" else "Прогноз улучшился: сегодня после 20:00 на Медведовке"
-        send_poll(tg, st, f"{lead} {evening_line(e)}.\n{SITE}", f"Сегодня 20:00, мокро {e['pct']}%. Едешь?", today, "weather", vault)
-    elif slot == "evening" and e and today in polled and e["status"] == "dry" and st.get("cancelled") != today:
-        tg.call("sendMessage", chat_id=chat, text=with_joke(st, vault, f"Отбой: прогноз ухудшился, к вечеру мокро всего {e['pct']}%."))
-        st["cancelled"] = today
-    t = by_date.get(tomorrow)
-    if slot == "noon" and t and t["status"] == "go" and st.get("heads_up") != tomorrow and tomorrow not in polled:
-        tg.call("sendMessage", chat_id=chat, text=with_joke(st, vault, f"Завтра ({ru_date(tomorrow)}) после 20:00 на Медведовке {evening_line(t)}. Опрос пришлю завтра в обед, если прогноз устоит."))
+    sp, e, other = pick(today)
+    if slot in ("noon", "evening") and sp and today not in polled:
+        pre = "" if slot == "noon" else "Прогноз улучшился. "
+        if sp == "medvedovka":
+            text = f"{pre}Сегодня после 20:00 на Медведовке {evening_line(e)}."
+            if other and other["status"] == "go":
+                text += f"\nНа Красной площади тоже мокро ({other['pct']}%)."
+        else:
+            text = (f"{pre}Запасной вариант: на Медведовке сегодня сухо ({other['pct'] if other else 0}%), "
+                    f"а на Красной площади {evening_line(e)}.")
+        send_poll(tg, st, f"{text}\n{SITE}", f"Сегодня 20:00, {E.SPOTS[sp][0]}, мокро {e['pct']}%. Едешь?", today, "weather", vault, sp)
+    elif slot == "evening" and today in polled and st.get("cancelled") != today:
+        last = [p for p in polls.values() if p["date"] == today and p.get("kind") != "test"]
+        psp = (last[-1].get("spot") if last else None) or "medvedovka"
+        cur = by.get(psp, {}).get(today)
+        if cur and cur["status"] == "dry":
+            alt_sp, alt_e, _ = pick(today)
+            text = f"Отбой: на {'Медведовке' if psp == 'medvedovka' else 'Красной площади'} к вечеру мокро всего {cur['pct']}%."
+            if alt_sp and alt_sp != psp:
+                text += f" Зато на {'Медведовке' if alt_sp == 'medvedovka' else 'Красной площади'} мокро {alt_e['pct']}%."
+            tg.call("sendMessage", chat_id=chat, text=with_joke(st, vault, text))
+            st["cancelled"] = today
+    tsp, t, tother = pick(tomorrow)
+    if slot == "noon" and tsp and st.get("heads_up") != tomorrow and tomorrow not in polled:
+        where = "на Медведовке" if tsp == "medvedovka" else "на Красной площади (на Медведовке сухо)"
+        tg.call("sendMessage", chat_id=chat, text=with_joke(st, vault, f"Завтра ({ru_date(tomorrow)}) после 20:00 {where} {evening_line(t)}. Опрос пришлю завтра в обед, если прогноз устоит."))
         st["heads_up"] = tomorrow
 
 
@@ -339,8 +367,10 @@ def main():
     if a.mode == "calibrate" or stale:
         calibrate_models(cal)
 
-    b = E.fetch_bundle()
+    b = E.fetch_bundle("medvedovka")
     ev = E.analyze(b, cal) if b else []
+    bk = E.fetch_bundle("krasnaya")
+    ev_k = E.analyze(bk, cal) if bk else []
     print("forecast:", ", ".join(f"{e['date'][5:]} {e['pct']}%" for e in ev[:7]) or "нет данных",
           f"| det={len(b['det']) + 1 if b else 0} ens={len(b['ens']) if b else 0}")
     if ev:
@@ -353,7 +383,7 @@ def main():
             e = ev[0]
             tg.call("sendMessage", chat_id=st["chat_id"], text=with_joke(st, vault, f"Проверка связи. Сегодня после 20:00: {evening_line(e)}.\n{SITE}"))
         elif slot != "calibrate":
-            notify(tg, st, vault, ev, slot)
+            notify(tg, st, vault, {"medvedovka": ev, "krasnaya": ev_k}, slot)
     verify(cal)
     save_json(CAL, cal)
     seen = st.pop("_seen", [])
@@ -361,7 +391,7 @@ def main():
     save_json(ROOT / "data" / "last_run.json", {"updates": seen[-20:],
         "at": E.now_msk().strftime("%Y-%m-%dT%H:%M"), "mode": a.mode, "slot": slot,
         "telegram": bool(tg.token), "vault": vault.ok, "chat": bool(st.get("chat_id")),
-        "evenings": len(ev), "det": (len(b["det"]) + 1) if b else 0, "ens": len(b["ens"]) if b else 0,
+        "evenings": len(ev), "evenings_krasnaya": len(ev_k), "det": (len(b["det"]) + 1) if b else 0, "ens": len(b["ens"]) if b else 0,
         "errors": E.ERRORS[:30]})
 
 
