@@ -351,7 +351,8 @@ def calibrate_models(cal: dict, days: int = 365):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--mode", default="auto", choices=["auto", "noon", "evening", "collect", "calibrate", "test", "testpoll"])
+    ap.add_argument("--mode", default="auto", choices=["auto", "noon", "evening", "collect", "calibrate", "test", "testpoll", "joke"])
+    ap.add_argument("--who", default="")
     a = ap.parse_args()
     st = load_json(STATE, {})
     cal = load_json(CAL, {})
@@ -362,6 +363,19 @@ def main():
     print(f"mode={a.mode} slot={slot} telegram={'yes' if tg.token else 'no'} vault={'yes' if vault.ok else 'no'} chat={'yes' if st.get('chat_id') else 'no'}")
 
     collect_updates(tg, st, vault)
+
+    if a.mode == "joke":
+        jokes = (vault.data.get("jokes") or {}) if vault.ok else {}
+        key = next((k for k in jokes if a.who and a.who.lower() in k.lower()), None)
+        if key and tg.token and st.get("chat_id"):
+            used = st.setdefault("joke_pick", {})
+            i = used.get(key, 0); used[key] = i + 1
+            tg.call("sendMessage", chat_id=st["chat_id"], text=f"🖤 {jokes[key][i % len(jokes[key])]}")
+            print("joke sent:", key)
+        else:
+            print("joke: не найден человек или нет чата/токена")
+        save_json(STATE, st)
+        return
 
     stale = not cal.get("calibrated") or cal["calibrated"] < (E.now_msk() - timedelta(days=7)).strftime("%Y-%m-%d")
     if a.mode == "calibrate" or stale:

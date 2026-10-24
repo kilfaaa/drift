@@ -15,7 +15,11 @@ on:
         description: "Режим"
         type: choice
         default: auto
-        options: [auto, noon, evening, collect, calibrate, test, testpoll]
+        options: [auto, noon, evening, collect, calibrate, test, testpoll, joke]
+      who:
+        description: "Для режима joke: про кого анекдот"
+        type: string
+        default: ""
 
 permissions:
   contents: write
@@ -38,7 +42,7 @@ jobs:
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           CREW_BOT_CODE: ${{ secrets.CREW_BOT_CODE }}
-        run: python bot/run.py --mode "${{ inputs.mode || 'auto' }}"
+        run: python bot/run.py --mode "${{ inputs.mode || 'auto' }}" --who "${{ inputs.who }}"
       - name: Сохранить журнал и статистику
         run: |
           git config user.name "medvedovka-bot"
