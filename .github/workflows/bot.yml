@@ -34,8 +34,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
       - run: pip install --quiet cryptography==43.0.3
@@ -52,5 +52,10 @@ jobs:
           [ -f crew/stats.json ] && git add crew/stats.json
           if git diff --cached --quiet; then echo "без изменений"; exit 0; fi
           git commit -m "бот: прогноз, журнал, статистика"
-          for i in 1 2 3; do git pull --rebase origin main && git push origin HEAD:main && exit 0; sleep 5; done
+          # при одновременной правке state.json побеждает свежая версия бота
+          for i in 1 2 3 4; do
+            if git pull --rebase -X theirs origin main && git push origin HEAD:main; then exit 0; fi
+            git rebase --abort 2>/dev/null || true
+            sleep $((i * 5))
+          done
           exit 1
