@@ -1,8 +1,6 @@
 {
- "updates": [
-  "message:group:"
- ],
- "at": "2026-10-25T00:34",
+ "updates": [],
+ "at": "2026-10-25T00:38",
  "mode": "auto",
  "slot": "collect",
  "telegram": true,
