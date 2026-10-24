@@ -1,10 +1,8 @@
 {
- "updates": [
-  "poll_answer:-:"
- ],
- "at": "2026-10-24T02:24",
+ "updates": [],
+ "at": "2026-10-24T12:06",
  "mode": "auto",
- "slot": "collect",
+ "slot": "noon",
  "telegram": true,
  "vault": true,
  "chat": true,
