@@ -10,5 +10,9 @@
    "kind": "test"
   }
  },
- "joke_n": 1
+ "joke_n": 1,
+ "_seen": [],
+ "joke_pick": {
+  "Гастончик": 1
+ }
 }
