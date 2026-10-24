@@ -149,8 +149,15 @@ def with_joke(st: dict, vault: "Vault", text: str) -> str:
         return text
     n = st.get("joke_n", 0); st["joke_n"] = n + 1
     who = people[n % len(people)]
+    return f"{text}\n\n🖤 {next_joke(st, jokes, who)}"
+
+
+def next_joke(st: dict, jokes: dict, who: str) -> str:
+    """Следующий анекдот про человека: общая очередь для всех сообщений, без повторов до конца списка."""
+    used = st.setdefault("joke_pick", {})
+    i = used.get(who, 0); used[who] = i + 1
     lst = jokes[who]
-    return f"{text}\n\n🖤 {lst[(n // len(people)) % len(lst)]}"
+    return lst[i % len(lst)]
 
 
 def send_poll(tg: TG, st: dict, text: str, question: str, date: str, kind: str, vault: "Vault | None" = None, spot: str = "medvedovka"):
@@ -351,7 +358,7 @@ def calibrate_models(cal: dict, days: int = 365):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--mode", default="auto", choices=["auto", "noon", "evening", "collect", "calibrate", "test", "testpoll", "joke"])
+    ap.add_argument("--mode", default="auto", choices=["auto", "noon", "evening", "collect", "calibrate", "test", "testpoll", "joke", "jokebeat"])
     ap.add_argument("--who", default="")
     a = ap.parse_args()
     st = load_json(STATE, {})
@@ -364,13 +371,22 @@ def main():
 
     collect_updates(tg, st, vault)
 
+    if a.mode == "jokebeat":
+        jokes = (vault.data.get("jokes") or {}) if vault.ok else {}
+        people = sorted(k for k, v in jokes.items() if v)
+        if people and tg.token and st.get("chat_id"):
+            n = st.get("joke_rot", 0); st["joke_rot"] = n + 1
+            who = people[n % len(people)]
+            tg.call("sendMessage", chat_id=st["chat_id"], text=f"🖤 {next_joke(st, jokes, who)}")
+            print("jokebeat sent:", who)
+        save_json(STATE, st)
+        return
+
     if a.mode == "joke":
         jokes = (vault.data.get("jokes") or {}) if vault.ok else {}
         key = next((k for k in jokes if a.who and a.who.lower() in k.lower()), None)
         if key and tg.token and st.get("chat_id"):
-            used = st.setdefault("joke_pick", {})
-            i = used.get(key, 0); used[key] = i + 1
-            tg.call("sendMessage", chat_id=st["chat_id"], text=f"🖤 {jokes[key][i % len(jokes[key])]}")
+            tg.call("sendMessage", chat_id=st["chat_id"], text=f"🖤 {next_joke(st, jokes, key)}")
             print("joke sent:", key)
         else:
             print("joke: не найден человек или нет чата/токена")
