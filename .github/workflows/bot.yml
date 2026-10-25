@@ -2,11 +2,7 @@ name: Прогноз и бот
 
 on:
   schedule:
-    - cron: "7 9 * * *"    # 12:07 МСК — прогноз на вечер, опрос, журнал
-    - cron: "7 15 * * *"   # 18:07 МСК — уточнение на вечер
-    - cron: "37 4 * * *"   # 07:37 МСК — собрать голоса
-    - cron: "37 20 * * *"  # 23:37 МСК — собрать голоса
-    - cron: "13 7,11,15,19 * * *"  # 10:13, 14:13, 18:13, 22:13 МСК — анекдот по очереди
+    - cron: "7,37 * * * *"   # каждые полчаса; что делать, бот решает сам по времени МСК
   push:
     branches: [main]
     paths: ["crew/vault.json", "bot/**", ".github/workflows/bot.yml"]
@@ -43,7 +39,7 @@ jobs:
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           CREW_BOT_CODE: ${{ secrets.CREW_BOT_CODE }}
-        run: python bot/run.py --mode "${{ github.event.schedule == '13 7,11,15,19 * * *' && 'jokebeat' || inputs.mode || 'auto' }}" --who "${{ inputs.who }}"
+        run: python bot/run.py --mode "${{ inputs.mode || 'auto' }}" --who "${{ inputs.who }}"
       - name: Сохранить журнал и статистику
         run: |
           git config user.name "medvedovka-bot"

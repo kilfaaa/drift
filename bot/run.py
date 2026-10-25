@@ -365,13 +365,15 @@ def main():
     cal = load_json(CAL, {})
     tg = TG(os.environ.get("TELEGRAM_BOT_TOKEN") or None)
     vault = Vault(os.environ.get("CREW_BOT_CODE") or None)
-    h = E.now_msk().hour
-    slot = a.mode if a.mode != "auto" else ("noon" if 10 <= h < 16 else "evening" if 16 <= h < 20 else "collect")
+    now = E.now_msk(); h = now.hour; today = now.strftime("%Y-%m-%d")
+    # GitHub запускает расписание с опозданиями и пропусками, поэтому бот запускается часто,
+    # а что делать — решает сам по времени и по тому, что уже сделано сегодня (state.json)
+    slot = a.mode if a.mode != "auto" else ("noon" if 11 <= h < 16 else "evening" if 16 <= h < 20 else "collect")
     print(f"mode={a.mode} slot={slot} telegram={'yes' if tg.token else 'no'} vault={'yes' if vault.ok else 'no'} chat={'yes' if st.get('chat_id') else 'no'}")
 
     collect_updates(tg, st, vault)
 
-    if a.mode == "jokebeat":
+    def send_beat():
         jokes = (vault.data.get("jokes") or {}) if vault.ok else {}
         people = sorted(k for k, v in jokes.items() if v)
         if people and tg.token and st.get("chat_id"):
@@ -379,6 +381,11 @@ def main():
             who = people[n % len(people)]
             tg.call("sendMessage", chat_id=st["chat_id"], text=f"🖤 {next_joke(st, jokes, who)}")
             print("jokebeat sent:", who)
+            return True
+        return False
+
+    if a.mode == "jokebeat":
+        send_beat()
         save_json(STATE, st)
         return
 
@@ -414,15 +421,23 @@ def main():
             tg.call("sendMessage", chat_id=st["chat_id"], text=with_joke(st, vault, f"Проверка связи. Сегодня после 20:00: {evening_line(e)}.\n{SITE}"))
         elif slot != "calibrate":
             notify(tg, st, vault, {"medvedovka": ev, "krasnaya": ev_k}, slot)
+    # анекдот раз в 4 часа днём: окна 10–14, 14–18, 18–22, 22–24
+    if a.mode == "auto" and 10 <= h <= 23:
+        win = f"{today}-{(h - 10) // 4}"
+        if st.get("joke_win") != win and send_beat():
+            st["joke_win"] = win
     verify(cal)
     save_json(CAL, cal)
     seen = st.pop("_seen", [])
     save_json(STATE, st)
-    save_json(ROOT / "data" / "last_run.json", {"updates": seen[-20:],
-        "at": E.now_msk().strftime("%Y-%m-%dT%H:%M"), "mode": a.mode, "slot": slot,
-        "telegram": bool(tg.token), "vault": vault.ok, "chat": bool(st.get("chat_id")),
-        "evenings": len(ev), "evenings_krasnaya": len(ev_k), "det": (len(b["det"]) + 1) if b else 0, "ens": len(b["ens"]) if b else 0,
-        "errors": E.ERRORS[:30]})
+    diag = {"updates": seen[-20:], "mode": a.mode, "slot": slot,
+            "telegram": bool(tg.token), "vault": vault.ok, "chat": bool(st.get("chat_id")),
+            "evenings": len(ev), "evenings_krasnaya": len(ev_k), "det": (len(b["det"]) + 1) if b else 0, "ens": len(b["ens"]) if b else 0,
+            "errors": E.ERRORS[:30]}
+    lr = ROOT / "data" / "last_run.json"
+    old = load_json(lr, {}); old.pop("at", None)
+    if old != diag:   # не коммитить каждые полчаса одно и то же
+        save_json(lr, {"at": now.strftime("%Y-%m-%dT%H:%M"), **diag})
 
 
 if __name__ == "__main__":
