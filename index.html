@@ -217,6 +217,8 @@ h2{letter-spacing:.02em}
 .spots button+button{border-left:1px solid rgba(236,236,234,.35)}
 .spots button[aria-selected="true"]{background:var(--fg);color:var(--bg)}
 .spots b{font-variant-numeric:tabular-nums;color:var(--muted);font-weight:800}
+.spots button{flex-direction:column;gap:3px;line-height:1.1}
+.spots b{font-size:11px;letter-spacing:.08em}
 .spots b.go{color:var(--go)} .spots b.maybe{color:var(--maybe)}
 .spots button[aria-selected="true"] b{color:var(--bg)}
 .spots button[aria-selected="true"] b.go::before,.spots button[aria-selected="true"] b.maybe::before{content:"";display:inline-block;width:7px;height:7px;margin-right:5px;vertical-align:1px;background:var(--go)}
@@ -783,9 +785,14 @@ async function loadLive(sp){
 const loadAll=()=>Promise.all(SPOTS.map(loadLive));
 function renderTabs(){
   document.querySelectorAll("#spots button").forEach(btn=>{
-    const id=btn.dataset.spot, d=DATA[id], e=d&&d.evenings&&d.evenings[0];
+    const id=btn.dataset.spot, d=DATA[id], evs=d&&d.evenings;
     btn.setAttribute("aria-selected",String(id===SPOT.id));
-    const b=btn.querySelector("b"); b.className=e?e.status:""; b.textContent=e?e.pct+"%":"";
+    // тот же вечер, до которого считает таймер: ближайший «Мокро · едем», окно которого ещё не закончилось
+    const e=evs&&evs.find(x=>x.status==="go"&&new Date(x.date+"T"+String(W0+W_LEN-1).padStart(2,"0")+":59:59+03:00")>Date.now());
+    const b=btn.querySelector("b");
+    if(!evs){ b.className=""; b.textContent=""; }
+    else if(!e){ b.className=""; b.textContent="сухо"; }
+    else { b.className="go"; b.textContent=(e.isToday?"сегодня":ruDay(e.date).split(",")[0])+" "+e.pct+"%"; }
   });
 }
 function setSpot(id,push){
