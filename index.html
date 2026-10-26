@@ -301,7 +301,7 @@ body.locked{padding-bottom:0}
     <div class="hero-center">
       <div class="spots" id="spots" role="tablist" aria-label="Точка">
         <button type="button" role="tab" data-spot="medvedovka" aria-selected="true">Medvedovka<b></b></button>
-        <button type="button" role="tab" data-spot="krasnaya" aria-selected="false">Красная площадь<b></b></button>
+        <button type="button" role="tab" data-spot="krasnaya" aria-selected="false">KAPANY<b></b></button>
       </div>
       <h1 class="spot-name" id="spot-h">Medvedovka</h1>
       <div class="timer" id="timer" role="timer" aria-live="off">
@@ -457,7 +457,7 @@ const dayDiff=(a,b)=>Math.round((new Date(b+"T00:00:00Z")-new Date(a+"T00:00:00Z
    Wet asphalt is a water balance: rain adds water, evaporation removes it. */
 const SPOTS=[
   {id:"medvedovka",title:"Medvedovka",ru:"Медведовка",lat:45.383020,lon:39.025310},
-  {id:"krasnaya",title:"Krasnaya Ploshchad",ru:"Красная площадь",lat:45.102440,lon:38.991828}];
+  {id:"krasnaya",title:"KAPANY",ru:"KAPANY",lat:45.102440,lon:38.991828}];
 let SPOT=SPOTS[0]; const DATA={};
 const omq=sp=>"latitude="+sp.lat+"&longitude="+sp.lon+"&timezone=Europe%2FMoscow&past_days=1&forecast_days=14";
 const mainUrl=sp=>"https://api.open-meteo.com/v1/forecast?"+omq(sp)+
@@ -609,7 +609,7 @@ function renderHero(){
   else line="Шанс мокрого асфальта всего <b>"+e.pct+"%</b>, будет сухо.";
   if(e.status!=="go") line+= g?" Ближайший мокрый вечер — <b>"+(g.isToday?"сегодня":ruDay(g.date))+"</b>.":" Мокрых вечеров в ближайшие 14 дней пока не видно.";
   const other=SPOTS.find(x=>x!==SPOT), oe=DATA[other.id]&&DATA[other.id].evenings&&DATA[other.id].evenings[0];
-  if(e.status!=="go"&&oe&&oe.status==="go"&&oe.date===e.date) line+='<br><button type="button" class="alt" id="altSpot">'+(other.id==="krasnaya"?"На Красной площади":"На Медведовке")+' мокро '+oe.pct+'% →</button>';
+  if(e.status!=="go"&&oe&&oe.status==="go"&&oe.date===e.date) line+='<br><button type="button" class="alt" id="altSpot">'+(other.id==="krasnaya"?"На KAPANY":"На Медведовке")+' мокро '+oe.pct+'% →</button>';
   txt.innerHTML=line;
   const alt=$("altSpot"); if(alt) alt.onclick=()=>{ setSpot(other.id,true); scrollTo({top:0,behavior:"smooth"}); };
   const chips=[];

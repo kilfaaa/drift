@@ -13,7 +13,7 @@ import urllib.request
 from datetime import datetime, timedelta, timezone
 
 LAT, LON = 45.38302, 39.02531   # основной спот (журнал и подстройка считаются по нему)
-SPOTS = {"medvedovka": ("Медведовка", 45.383020, 39.025310), "krasnaya": ("Красная площадь", 45.102440, 38.991828)}
+SPOTS = {"medvedovka": ("Медведовка", 45.383020, 39.025310), "krasnaya": ("KAPANY", 45.102440, 38.991828)}
 MSK = timezone(timedelta(hours=3))
 TZ_Q = "Europe%2FMoscow"
 def om(lat, lon):
