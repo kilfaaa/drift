@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>coffeeGaysClub · Medvedovka</title>
-<meta name="description" content="Прогноз мокрого асфальта на точке после 20:00, сборы и участники.">
+<meta name="description" content="Прогноз мокрого асфальта на точке после 20:00 и сборы.">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#0b0c0e">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -384,20 +384,7 @@ body.locked{padding-bottom:0}
     </div>
   </section>
 
-  <section id="crew" aria-labelledby="crew-h">
-    <div class="sec-head">
-      <div><div class="eyebrow">Экипаж</div><h2 id="crew-h">Дрифтеры и машины</h2></div>
-      <button class="btn primary" id="addDriverBtn" hidden>Добавить дрифтера</button>
-    </div>
-    <div class="cards" id="cards"></div>
-  </section>
 
-  <section id="rating" aria-labelledby="rating-h">
-    <div class="sec-head">
-      <div><div class="eyebrow">По ответам «Еду» в опросах Telegram</div><h2 id="rating-h">Рейтинг выездов</h2></div>
-    </div>
-    <div id="ratingBody"><p class="empty" style="padding-top:20px">Рейтинг появится после первых опросов в чате.</p></div>
-  </section>
 
   <section class="panel spot" aria-label="Точка сбора">
     <div><div class="eyebrow" id="spotEyebrow">Дрифт-спот · Медведовка</div><div class="coords mono" id="coords">45.383020, 39.025310</div></div>
@@ -408,28 +395,6 @@ body.locked{padding-bottom:0}
   </section>
 </main>
 
-<dialog id="driverDlg" aria-labelledby="dlg-h">
-  <form class="form" id="driverForm" method="dialog" style="margin-top:0">
-    <h3 class="full" id="dlg-h" style="font-size:20px">Карточка дрифтера</h3>
-    <label>Имя<input id="dName" required maxlength="40"></label>
-    <label>Позывной<input id="dNick" maxlength="30" placeholder="Например: Шрам"></label>
-    <label>Машина<input id="dCar" required maxlength="60" placeholder="ВАЗ-2105"></label>
-    <label>Год<input id="dYear" inputmode="numeric" maxlength="4" placeholder="1987"></label>
-    <label>Госномер<input id="dPlate" maxlength="12" placeholder="А123ВС 23"></label>
-    <label>Мотор<input id="dEngine" maxlength="60" placeholder="2106, 1.6 карб"></label>
-    <label>Мощность, л.с.<input id="dPower" inputmode="numeric" maxlength="5" placeholder="80"></label>
-    <label>Коробка<input id="dGear" maxlength="40" placeholder="5-ступка"></label>
-    <label>Дифференциал<select id="dDiff"><option value="">—</option><option>Заварка</option><option>Самоблок</option><option>Открытый</option></select></label>
-    <label class="full">Доработки<input id="dMods" maxlength="200" placeholder="Выворот, гидроручник, ковш"></label>
-    <label class="full">О себе и о машине<textarea id="dAbout" maxlength="600"></textarea></label>
-    <label class="full" id="photoWrap">Фото машины<input type="file" id="dPhoto" accept="image/*"></label>
-    <div class="form-actions">
-      <button class="btn primary" type="submit" id="dSave">Сохранить</button>
-      <button class="btn ghost" type="button" id="dCancel">Отмена</button>
-      <span class="msg" id="dMsg"></span>
-    </div>
-  </form>
-</dialog>
 
 <script>
 (function(){
@@ -827,19 +792,17 @@ async function init(){
   const live=loadAll();
   if(!window.claude||!claude.use){ await loadStatic(); await live; if(!liveOk) fcMeta="Не удалось загрузить прогноз. Обнови страницу позже."; renderForecast(); return; }
   [db,user]=await Promise.all([claude.use("db"),claude.use("user")]);
-  claude.use("assets").then(a=>{assets=a; if(!a) $("photoWrap").hidden=true;});
   if(user){
     uid=await user.id().catch(()=>null);
     const cw=await user.can("data.write").catch(()=>null);
     canWrite=cw!==false; isAdmin=await user.canEdit().catch(()=>false);
   }
   if(!db){ await loadStatic(); return; }
-  $("announceBtn").hidden=!canWrite; $("addDriverBtn").hidden=!canWrite;
+  $("announceBtn").hidden=!canWrite;
   db.doc("settings/main").onSnapshot(s=>{ const d=s.exists?s.data():null; if(d&&d.crewName){ const parts=String(d.crewName).split(" "); const last=parts.pop(); $("crewName").innerHTML=esc(parts.join(" "))+(parts.length?" ":"")+"<span>"+esc(last)+"</span>"; } },()=>{});
   db.doc("forecast/current").onSnapshot(s=>useStored(s.exists?s.data():null),()=>{});
   db.collection("meets").onSnapshot(s=>{ meets=s.docs.map(d=>({id:d.id,...d.data()})); renderMeets(); },()=>{});
   db.collection("rsvp").onSnapshot(s=>{ rsvps=s.docs.map(d=>({id:d.id,...d.data()})); resolveNames(rsvps.map(r=>r.id)).then(renderMeets); },()=>{});
-  db.collection("drivers").orderBy("createdAt","asc").onSnapshot(s=>{ drivers=s.docs.map(d=>({id:d.id,...d.data()})); renderDrivers(); },()=>{ drivers=[]; renderDrivers(); });
   await live;
   if(!liveOk&&!evenings){ fcMeta="Свежий прогноз ещё не загружен."; renderForecast(); }
 }
@@ -873,15 +836,8 @@ async function loadStats(K){
     return JSON.parse(new TextDecoder().decode(pt));
   }catch(_){ return null; }
 }
-function renderRating(st){
-  const body=$("ratingBody");
-  const ppl=Object.values((st&&st.people)||{}).map(p=>({name:p.name,n:(p.dates||[]).length,last:(p.dates||[]).slice(-1)[0]})).filter(p=>p.n>0).sort((a,b)=>b.n-a.n||(b.last||"").localeCompare(a.last||""));
-  if(!ppl.length) return;
-  const max=ppl[0].n;
-  body.innerHTML='<ol class="rating">'+ppl.map(p=>'<li><div><div class="nm">'+esc(p.name)+'</div><div class="bar"><i style="width:'+Math.round(p.n/max*100)+'%"></i></div></div><div class="ct">'+p.n+'<small>'+(p.n%10===1&&p.n%100!==11?"выезд":p.n%10>=2&&p.n%10<=4&&(p.n%100<10||p.n%100>=20)?"выезда":"выездов")+'</small></div></li>').join("")+'</ol>';
-}
 function showPrivate(r){
-  const d=r.data; loadStats(r.K).then(renderRating);
+  const d=r.data;
   if(d.crewName) $("crewName").textContent=String(d.crewName);
   meets=(d.meets||[]).map((m,i)=>({id:"m"+i,...m}));
   drivers=(d.drivers||[]).map((x,i)=>({id:"d"+i,...x}));
@@ -968,75 +924,8 @@ $("meetForm").addEventListener("submit",async ev=>{
   }catch(e){ msg.className="msg err"; msg.textContent=e&&e.code==="invalid_argument"?"У тебя нет прав объявлять сборы. Попроси владельца дать доступ «Участник».":"Не получилось сохранить. Попробуй ещё раз."; }
 });
 
-/* ---------- crew ---------- */
-let editId=null, confirmDrv=null;
-function plateHtml(p){
-  p=String(p||"").trim().toUpperCase(); if(!p) return "";
-  const m=p.match(/^(.*?)\s*(\d{2,3})$/);
-  return '<span class="plate"><span class="num">'+esc(m?m[1]:p)+'</span>'+(m?'<span class="reg">'+esc(m[2])+'<small>RUS</small></span>':'')+'</span>';
-}
-function renderDrivers(){
-  const box=$("cards");
-  if(!drivers.length){
-    box.style.display="block";
-    box.innerHTML='<div class="crew-empty"><h3 style="font-size:18px">Карточек пока нет</h3><p class="empty">Здесь будут дрифтеры компании: имя, позывной, машина, мотор, мощность, коробка, диф, доработки и фото.'+(canWrite?' Добавь первую карточку — свою.':'')+'</p>'+(canWrite?'<button class="btn primary" id="addFirst">Добавить дрифтера</button>':'')+'</div>';
-    const b=$("addFirst"); if(b) b.onclick=()=>openDriver(null);
-    return;
-  }
-  box.style.display="";
-  box.innerHTML=drivers.map(d=>{
-    const rows=[["Мотор",d.engine],["Мощность",d.power?d.power+" л.с.":""],["Коробка",d.gear],["Диф",d.diff],["Доработки",d.mods]].filter(r=>r[1]);
-    const initials=(d.car||"?").replace(/[^0-9A-Za-zА-Яа-я]/g,"").slice(0,4)||"?";
-    return '<article class="card">'+
-      '<div class="photo">'+(d.photo||d.photoId?'<img src="'+esc(d.photo||("/_blob/"+d.photoId))+'" alt="'+esc(d.car)+' — машина '+esc(d.name)+'" loading="lazy">':esc(initials))+plateHtml(d.plate)+'</div>'+
-      '<div class="card-body">'+
-        '<div class="who"><h3>'+esc(d.name)+'</h3>'+(d.nick?'<span class="nick">«'+esc(d.nick)+'»</span>':'')+'</div>'+
-        '<div class="car">'+esc(d.car)+(d.year?' <span class="msg mono">'+esc(d.year)+'</span>':'')+'</div>'+
-        (rows.length?'<dl class="specs">'+rows.map(r=>'<dt>'+r[0]+'</dt><dd>'+esc(r[1])+'</dd>').join("")+'</dl>':'')+
-        (d.about?'<p class="about">'+esc(d.about)+'</p>':'')+
-        (canWrite?'<div class="card-actions">'+(confirmDrv===d.id?'<span class="confirm">Удалить карточку? <button class="btn" data-del-yes="'+d.id+'">Удалить</button><button class="btn ghost" data-del-no="1">Нет</button></span>':'<button class="btn" data-edit="'+d.id+'">Изменить</button><button class="btn ghost" data-del="'+d.id+'">Удалить</button>')+'</div>':'')+
-      '</div></article>';
-  }).join("");
-}
-$("cards").addEventListener("click",async e=>{
-  const t=e.target.closest("button"); if(!t) return;
-  if(t.dataset.edit) openDriver(t.dataset.edit);
-  else if(t.dataset.del){confirmDrv=t.dataset.del;renderDrivers();}
-  else if(t.dataset.delNo){confirmDrv=null;renderDrivers();}
-  else if(t.dataset.delYes){t.disabled=true; try{await db.doc("drivers/"+t.dataset.delYes).delete();}catch(_){ } confirmDrv=null;}
-});
-const F={name:"dName",nick:"dNick",car:"dCar",year:"dYear",plate:"dPlate",engine:"dEngine",power:"dPower",gear:"dGear",diff:"dDiff",mods:"dMods",about:"dAbout"};
-function openDriver(id){
-  editId=id; const d=id?drivers.find(x=>x.id===id):{};
-  for(const k in F) $(F[k]).value=(d&&d[k])||"";
-  $("dPhoto").value=""; $("dMsg").textContent=""; $("dMsg").className="msg";
-  $("driverDlg").showModal();
-}
-$("addDriverBtn").onclick=()=>openDriver(null);
-$("dCancel").onclick=()=>$("driverDlg").close();
-async function shrink(file){
-  const img=await createImageBitmap(file); const s=Math.min(1,1400/Math.max(img.width,img.height));
-  const c=document.createElement("canvas"); c.width=Math.round(img.width*s); c.height=Math.round(img.height*s);
-  c.getContext("2d").drawImage(img,0,0,c.width,c.height);
-  return await new Promise(r=>c.toBlob(r,"image/jpeg",0.85));
-}
-$("driverForm").addEventListener("submit",async ev=>{
-  ev.preventDefault(); const msg=$("dMsg"), btn=$("dSave"); btn.disabled=true; msg.className="msg"; msg.textContent="Сохраняем…";
-  try{
-    const body={}; for(const k in F) body[k]=$(F[k]).value.trim();
-    if(!body.name||!body.car) throw {code:"need"};
-    const old=editId?drivers.find(x=>x.id===editId):null;
-    body.photoId=old&&old.photoId||"";
-    const f=$("dPhoto").files[0];
-    if(f&&assets){ msg.textContent="Загружаем фото…"; const b=await shrink(f).catch(()=>f); const up=await assets.upload(b||f); body.photoId=up.id; }
-    if(editId){ body.updatedAt=Date.now(); await db.doc("drivers/"+editId).update(body); }
-    else { body.createdAt=Date.now(); body.createdBy=uid; await db.collection("drivers").add(body); }
-    $("driverDlg").close();
-  }catch(e){
-    msg.className="msg err";
-    msg.textContent=e&&e.code==="need"?"Заполни имя и машину.":e&&e.code==="invalid_argument"?"Нет прав на изменение. Попроси владельца дать доступ «Участник».":"Не получилось сохранить. Попробуй ещё раз.";
-  }finally{ btn.disabled=false; }
-});
+function renderDrivers(){}
+function renderRating(){}
 
 /* ---------- spot ---------- */
 $("copyCoords").onclick=async()=>{
