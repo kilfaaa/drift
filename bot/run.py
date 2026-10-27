@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 """Бот Медведовки: запускается GitHub Actions по расписанию.
 
-Каждый запуск:
-  1. забирает новые события из Telegram (добавление в чат, голоса в опросах) → статистика выездов;
-  2. считает прогноз на 14 вечеров;
-  3. раз в день пишет прогноз в журнал data/forecast_log.csv;
+Каждый запуск (раз в полчаса):
+  1. забирает новые события из Telegram (добавление в чат, голоса в опросах);
+  2. раз в час считает прогноз на 14 вечеров для обеих точек и кладёт его в data/fc_*.json для сайта;
+  3. раз в день, в обед, пишет прогноз в журнал;
   4. объявляет новые сборы, в обед и вечером присылает опрос, если вечером мокро;
-  5. сверяет старые прогнозы с реанализом ERA5 и обновляет data/calibration.json.
+  5. после вечера с опросом спрашивает «как было на споте»;
+  6. сверяет старые прогнозы с ответами с места и реанализом ERA5, обновляет data/calibration.json;
+  7. раз в 4 часа днём присылает анекдот.
 
 Секреты (Settings → Secrets and variables → Actions):
   TELEGRAM_BOT_TOKEN — токен от @BotFather (без него Telegram-часть пропускается)
@@ -29,9 +31,22 @@ sys.path.insert(0, str(ROOT / "bot"))
 import engine as E  # noqa: E402
 
 STATE = ROOT / "bot" / "state.json"
-LOG = ROOT / "data" / "forecast_log.csv"
-VERIFY = ROOT / "data" / "verify.csv"
 CAL = ROOT / "data" / "calibration.json"
+TRUTH = ROOT / "data" / "ground_truth.json"   # ответы «как было на споте» (только счётчики, без имён)
+SPOT_IDS = ["medvedovka", "krasnaya"]
+LOG_PATH = {"medvedovka": ROOT / "data" / "forecast_log.csv", "krasnaya": ROOT / "data" / "forecast_log_krasnaya.csv"}
+VERIFY_PATH = {"medvedovka": ROOT / "data" / "verify.csv", "krasnaya": ROOT / "data" / "verify_krasnaya.csv"}
+FC_PATH = {sp: ROOT / "data" / f"fc_{sp}.json" for sp in SPOT_IDS}   # готовый прогноз для сайта
+TRUTH_OPTS = ["Мокро", "Сухо", "Не ездили"]
+
+
+def spot_cal(cal: dict, sp: str) -> dict:
+    """Калибровка и журнал точки: Медведовка лежит в корне calibration.json, остальные в cal["spots"][id]."""
+    return cal if sp == "medvedovka" else cal.setdefault("spots", {}).setdefault(sp, {})
+
+
+def spot_loc(sp: str) -> str:
+    return "Медведовке" if sp == "medvedovka" else "KAPANY"
 SITE = "https://kilfaaa.github.io/drift/"
 LOG_FIELDS = ["issued", "date", "lead", "pct", "p_det", "p_ens", "d_wet", "d_all", "e_wet", "e_all", "status"]
 RU_WD = ["пн", "вт", "ср", "чт", "пт", "сб", "вс"]
@@ -122,10 +137,22 @@ def collect_updates(tg: TG, st: dict, vault: Vault):
         if msg and msg.get("migrate_to_chat_id") and msg["chat"]["id"] == st.get("chat_id"):
             st["chat_id"] = msg["migrate_to_chat_id"]
         pa = u.get("poll_answer")
+        if pa:
+            poll = st.get("polls", {}).get(pa["poll_id"])
+            if poll and poll.get("kind") == "truth" and pa.get("user"):
+                import hashlib
+                who = hashlib.sha256(f"drift:{pa['user']['id']}".encode()).hexdigest()[:10]
+                votes = st.setdefault("truth_votes", {}).setdefault(pa["poll_id"], {})
+                ids = pa.get("option_ids", [])
+                if ids:
+                    votes[who] = ids[0]
+                else:
+                    votes.pop(who, None)
+                continue
         if pa and vault.ok:
             poll = st.get("polls", {}).get(pa["poll_id"])
             user = pa.get("user")
-            if poll and user and poll.get("kind") != "test":
+            if poll and user and poll.get("kind") in ("weather", "meet"):
                 uid = str(user["id"])
                 name = " ".join(x for x in (user.get("first_name"), user.get("last_name")) if x) or user.get("username") or "Без имени"
                 p = vault.stats["people"].setdefault(uid, {"name": name, "dates": []})
@@ -179,8 +206,10 @@ def evening_line(e) -> str:
     if e["d_all"]:
         s += f" (модели {e['d_wet']}/{e['d_all']}"
         s += f", ансамбль {e['e_wet']}/{e['e_all']})" if e["e_all"] else ")"
-    if e.get("t_min") is not None and e["t_min"] <= 1:
-        s += ", возможен гололёд"
+    if e.get("snow"):
+        s += ", но это снег"
+    elif e.get("ice"):
+        s += ", но дорога подмерзает — гололёд"
     return s
 
 
@@ -196,7 +225,7 @@ def notify(tg: TG, st: dict, vault: Vault, evs: dict, slot: str):
     by = {sp: {e["date"]: e for e in ev} for sp, ev in evs.items()}
     M, K = by.get("medvedovka", {}), by.get("krasnaya", {})
     polls = st.get("polls", {})
-    polled = {p["date"] for p in polls.values() if p.get("kind") != "test"}
+    polled = {p["date"] for p in polls.values() if p.get("kind") in ("weather", "meet")}
 
     def pick(d):
         """Куда ехать в этот вечер: Медведовка, если там мокро, иначе запасные KAPANY."""
@@ -236,16 +265,25 @@ def notify(tg: TG, st: dict, vault: Vault, evs: dict, slot: str):
                     f"а на KAPANY {evening_line(e)}.")
         send_poll(tg, st, f"{text}\n{SITE}", f"Сегодня 20:00, {E.SPOTS[sp][0]}, мокро {e['pct']}%. Едешь?", today, "weather", vault, sp)
     elif slot == "evening" and today in polled and st.get("cancelled") != today:
-        last = [p for p in polls.values() if p["date"] == today and p.get("kind") != "test"]
+        last = [p for p in polls.values() if p["date"] == today and p.get("kind") in ("weather", "meet")]
         psp = (last[-1].get("spot") if last else None) or "medvedovka"
         cur = by.get(psp, {}).get(today)
-        if cur and cur["status"] == "dry":
+        if cur and cur["status"] in ("dry", "snow", "ice"):
             alt_sp, alt_e, _ = pick(today)
-            text = f"Отбой: на {'Медведовке' if psp == 'medvedovka' else 'KAPANY'} к вечеру мокро всего {cur['pct']}%."
+            why = {"snow": "к вечеру пойдёт снег", "ice": "к вечеру дорога подмёрзнет, будет гололёд"}.get(cur["status"], f"к вечеру мокро всего {cur['pct']}%")
+            text = f"Отбой: на {spot_loc(psp)} {why}."
             if alt_sp and alt_sp != psp:
                 text += f" Зато на {'Медведовке' if alt_sp == 'medvedovka' else 'KAPANY'} мокро {alt_e['pct']}%."
             tg.call("sendMessage", chat_id=chat, text=with_joke(st, vault, text))
             st["cancelled"] = today
+    # снег или гололёд сегодня: опрос не шлём, но предупреждаем один раз
+    for wsp in SPOT_IDS:
+        we = by.get(wsp, {}).get(today)
+        if slot == "noon" and we and we["status"] in ("snow", "ice") and we["pct"] >= 60 and today not in polled \
+                and st.get("winter_note") != f"{today}-{wsp}" and wsp == "medvedovka":
+            what = "снег" if we["status"] == "snow" else "гололёд: асфальт будет мокрый и подмёрзший"
+            tg.call("sendMessage", chat_id=chat, text=with_joke(st, vault, f"Сегодня после 20:00 на Медведовке {what}. Это не обычный мокрый вечер, опрос не присылаю — решайте сами.\n{SITE}"))
+            st["winter_note"] = f"{today}-{wsp}"
     tsp, t, tother = pick(tomorrow)
     if slot == "noon" and tsp and st.get("heads_up") != tomorrow and tomorrow not in polled:
         where = "на Медведовке" if tsp == "medvedovka" else "на KAPANY (на Медведовке сухо)"
@@ -253,13 +291,15 @@ def notify(tg: TG, st: dict, vault: Vault, evs: dict, slot: str):
         st["heads_up"] = tomorrow
 
 
-def log_forecast(st: dict, ev: list):
+def log_forecast(st: dict, sp: str, ev: list):
+    """Раз в день, в обед (тот прогноз, по которому бот присылает опрос), пишем прогноз точки в журнал."""
     now = E.now_msk(); today = now.strftime("%Y-%m-%d")
-    if st.get("logged") == today or not ev:
+    logged = st.setdefault("logged_spots", {})
+    if not ev or now.hour < 11 or logged.get(sp) == today:
         return
-    new = not LOG.exists()
-    LOG.parent.mkdir(parents=True, exist_ok=True)
-    with LOG.open("a", newline="", encoding="utf-8") as f:
+    path = LOG_PATH[sp]; new = not path.exists()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("a", newline="", encoding="utf-8") as f:
         w = csv.DictWriter(f, fieldnames=LOG_FIELDS)
         if new:
             w.writeheader()
@@ -269,68 +309,111 @@ def log_forecast(st: dict, ev: list):
             w.writerow({"issued": now.strftime("%Y-%m-%dT%H:%M"), "date": e["date"], "lead": lead, "pct": e["pct"],
                         "p_det": r(e["p_det"]), "p_ens": r(e["p_ens"]), "d_wet": e["d_wet"], "d_all": e["d_all"],
                         "e_wet": e["e_wet"], "e_all": e["e_all"], "status": e["status"]})
-    st["logged"] = today
+    logged[sp] = today
 
 
-def verify(cal: dict):
-    """Сверить журнал с ERA5 (данные появляются с задержкой ~6 дней)."""
-    if not LOG.exists():
+def ask_truth(tg: TG, st: dict):
+    """После вечера, на который был опрос, спросить в чате, как было на самом деле."""
+    chat = st.get("chat_id")
+    if not tg.token or not chat:
         return
-    rows = list(csv.DictReader(LOG.open(encoding="utf-8")))
-    done = {r["date"]: r for r in csv.DictReader(VERIFY.open(encoding="utf-8"))} if VERIFY.exists() else {}
+    now = E.now_msk()
+    if now.hour == 23 and now.minute >= 25:
+        day = now.strftime("%Y-%m-%d")
+    elif now.hour < 2:
+        day = (now - timedelta(days=1)).strftime("%Y-%m-%d")
+    else:
+        return
+    asked = st.setdefault("truth_asked", [])
+    real = [p for p in st.get("polls", {}).values() if p["date"] == day and p.get("kind") in ("weather", "meet")]
+    if not real or day in asked:
+        return
+    sp = real[-1].get("spot") or "medvedovka"
+    m = tg.call("sendPoll", chat_id=chat, question=f"Как было на {spot_loc(sp)} {ru_date(day)}? Это для проверки прогноза",
+                options=[{"text": o} for o in TRUTH_OPTS], is_anonymous=False)
+    if m and m.get("poll"):
+        st.setdefault("polls", {})[m["poll"]["id"]] = {"date": day, "kind": "truth", "spot": sp}
+        asked.append(day); del asked[:-30]
+
+
+def aggregate_truth(st: dict) -> dict:
+    """Счётчики ответов «как было» по точкам и датам → data/ground_truth.json."""
+    out = {}
+    for pid, votes in st.get("truth_votes", {}).items():
+        poll = st.get("polls", {}).get(pid)
+        if not poll:
+            continue
+        c = out.setdefault(poll.get("spot") or "medvedovka", {}).setdefault(poll["date"], {"wet": 0, "dry": 0, "none": 0})
+        for opt in votes.values():
+            c[["wet", "dry", "none"][opt] if opt in (0, 1, 2) else "none"] += 1
+    if out or TRUTH.exists():
+        save_json(TRUTH, out)
+    return out
+
+
+def verify(cal_sp: dict, sp: str, truth: dict):
+    """Сверить журнал точки: ответы с места важнее реанализа ERA5 (он появляется через ~6 дней)."""
+    path, vpath = LOG_PATH[sp], VERIFY_PATH[sp]
+    if not path.exists():
+        return
+    _, lat, lon = E.SPOTS[sp]
+    rows = list(csv.DictReader(path.open(encoding="utf-8")))
+    done = {r["date"]: r for r in csv.DictReader(vpath.open(encoding="utf-8"))} if vpath.exists() else {}
     cutoff = (E.now_msk() - timedelta(days=6)).strftime("%Y-%m-%d")
     todo = sorted({r["date"] for r in rows if r["date"] <= cutoff and r["date"] not in done})
     if todo:
         start = (datetime.strptime(todo[0], "%Y-%m-%d") - timedelta(days=1)).strftime("%Y-%m-%d")
-        j = E.era5(start, todo[-1])
+        j = E.era5(start, todo[-1], lat, lon)
         if j:
             obs, _, _ = E.observed_evenings(j)
             for d in todo:
                 if d in obs:
                     done[d] = {"date": d, "wet": int(obs[d])}
-            with VERIFY.open("w", newline="", encoding="utf-8") as f:
+            with vpath.open("w", newline="", encoding="utf-8") as f:
                 w = csv.DictWriter(f, fieldnames=["date", "wet"]); w.writeheader()
                 for d in sorted(done):
                     w.writerow({"date": d, "wet": done[d]["wet"]})
-    # журнал «обещали / было»: прогноз, выпущенный в тот же день (lead 0)
-    lead0 = {}
-    for r in rows:
-        if r["lead"] == "0":
-            lead0[r["date"]] = r
-    journal, hits, n = [], 0, 0
-    pairs = []
-    for d in sorted(done):
+    # факт: сначала ответы с места (большинство «мокро» или «сухо»), иначе ERA5
+    fact = {d: (int(v["wet"]), "era5") for d, v in done.items()}
+    for d, c in (truth.get(sp) or {}).items():
+        if c["wet"] != c["dry"] and (c["wet"] or c["dry"]):
+            fact[d] = (1 if c["wet"] > c["dry"] else 0, "spot")
+    lead0 = {r["date"]: r for r in rows if r["lead"] == "0"}
+    journal, hits, n, pairs = [], 0, 0, []
+    for d in sorted(fact):
         r = lead0.get(d)
         if not r:
             continue
-        o = int(done[d]["wet"]); pct = int(r["pct"])
-        said_wet = pct >= 60; said_dry = pct < 30
-        ok = (said_wet and o) or (said_dry and not o)
+        o, src = fact[d]; pct = int(r["pct"])
+        said_wet, said_dry = pct >= 60, pct < 30
         if said_wet or said_dry:
-            n += 1; hits += 1 if ok else 0
-        journal.append({"date": d, "pct": pct, "wet": bool(o)})
+            n += 1; hits += 1 if ((said_wet and o) or (said_dry and not o)) else 0
+        journal.append({"date": d, "pct": pct, "wet": bool(o), "src": src})
         if r["p_det"] and r["p_ens"]:
             pairs.append((float(r["p_det"]), float(r["p_ens"]), o))
-    cal["journal"] = journal[-30:]
-    cal["verified"] = {"n": n, "hits": hits, "days": len(journal)}
-    # доля ансамбля: подбираем по журналу, когда набралось достаточно вечеров
+    cal_sp["journal"] = journal[-30:]
+    cal_sp["verified"] = {"n": n, "hits": hits, "days": len(journal), "spot": sum(1 for j in journal if j["src"] == "spot")}
     if len(pairs) >= 30 and sum(o for _, _, o in pairs) >= 5:
         best = min((sum((s * pe + (1 - s) * pd - o) ** 2 for pd, pe, o in pairs), s) for s in [x / 20 for x in range(4, 19)])
-        cal["ens_share"] = best[1]
+        cal_sp["ens_share"] = best[1]
 
 
-def calibrate_models(cal: dict, days: int = 365):
-    """Веса моделей по прошлому году: архив прогнозов Open-Meteo против ERA5."""
+ERA5_FAMILY = ("ECMWF", "ECMWF AIFS")   # ERA5 сделан на модели ECMWF, AIFS на нём обучен — им сравнение подыгрывает
+
+
+def calibrate_models(cal_sp: dict, sp: str, days: int = 365):
+    """Веса моделей по прошлому году для точки: архив прогнозов Open-Meteo против ERA5."""
+    _, lat, lon = E.SPOTS[sp]
     end = (E.now_msk() - timedelta(days=7)).date()
     start = end - timedelta(days=days)
-    obs_j = E.era5(start.isoformat(), end.isoformat())
+    obs_j = E.era5(start.isoformat(), end.isoformat(), lat, lon)
     if not obs_j:
         print("ERA5 недоступен — веса не обновлены"); return
     obs, et0, times = E.observed_evenings(obs_j)
     base = sum(obs.values()) / max(1, len(obs))
     stats = {}
     for m, name in [("best_match", "Open-Meteo")] + E.DET_MODELS:
-        url = (f"https://historical-forecast-api.open-meteo.com/v1/forecast?latitude={E.LAT}&longitude={E.LON}&timezone={E.TZ_Q}"
+        url = (f"https://historical-forecast-api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&timezone={E.TZ_Q}"
                f"&start_date={start}&end_date={end}&hourly=precipitation&models={m}")
         j = E.get_json(url, timeout=90)
         a = E.align(j, times)
@@ -349,11 +432,18 @@ def calibrate_models(cal: dict, days: int = 365):
             stats[name] = {"n": n, "acc": round(hits / n, 3), "bs": round(bs / n, 4)}
     ref = base * (1 - base)
     if ref > 0 and sum(obs.values()) >= 8:
-        cal["weights"] = {k: round(min(2.0, max(0.2, 1 + 2 * (1 - v["bs"] / ref))), 2) for k, v in stats.items()}
-    cal["models"] = stats
-    cal["base_rate"] = round(base, 3)
-    cal["calibrated"] = E.now_msk().strftime("%Y-%m-%d")
-    cal["period"] = [start.isoformat(), end.isoformat()]
+        wts = {k: round(min(2.0, max(0.2, 1 + 2 * (1 - v["bs"] / ref))), 2) for k, v in stats.items()}
+        others = [v for k, v in wts.items() if k not in ERA5_FAMILY]
+        if others:   # не даём ECMWF больше веса, чем лучшей «независимой» модели
+            cap = max(others)
+            for k in ERA5_FAMILY:
+                if k in wts:
+                    wts[k] = min(wts[k], cap)
+        cal_sp["weights"] = wts
+    cal_sp["models"] = stats
+    cal_sp["base_rate"] = round(base, 3)
+    cal_sp["calibrated"] = E.now_msk().strftime("%Y-%m-%d")
+    cal_sp["period"] = [start.isoformat(), end.isoformat()]
 
 
 def main():
@@ -400,18 +490,41 @@ def main():
         save_json(STATE, st)
         return
 
-    stale = not cal.get("calibrated") or cal["calibrated"] < (E.now_msk() - timedelta(days=7)).strftime("%Y-%m-%d")
-    if a.mode == "calibrate" or stale:
-        calibrate_models(cal)
+    # калибровка раз в неделю для каждой точки
+    for sp in SPOT_IDS:
+        cs = spot_cal(cal, sp)
+        stale = not cs.get("calibrated") or cs["calibrated"] < (now - timedelta(days=7)).strftime("%Y-%m-%d")
+        if a.mode == "calibrate" or stale:
+            calibrate_models(cs, sp)
 
-    b = E.fetch_bundle("medvedovka")
-    ev = E.analyze(b, cal) if b else []
-    bk = E.fetch_bundle("krasnaya")
-    ev_k = E.analyze(bk, cal) if bk else []
-    print("forecast:", ", ".join(f"{e['date'][5:]} {e['pct']}%" for e in ev[:7]) or "нет данных",
-          f"| det={len(b['det']) + 1 if b else 0} ens={len(b['ens']) if b else 0}")
+    # прогноз: полный расчёт не чаще раза в час (бережём бесплатный погодный сервис),
+    # результат кладём в data/fc_<точка>.json — сайт показывает ровно те же цифры
+    evs, metas = {}, {}
+    last = st.get("fc_at")
+    fresh = last and (now - datetime.fromisoformat(last)).total_seconds() < 55 * 60
+    need = a.mode in ("noon", "evening", "test", "testpoll", "calibrate") or not fresh or any(not FC_PATH[sp].exists() for sp in SPOT_IDS)
+    for sp in SPOT_IDS:
+        res = None
+        if need:
+            b = E.fetch_bundle(sp)
+            if b:
+                res = E.analyze(b, spot_cal(cal, sp), now)
+                save_json(FC_PATH[sp], {"generated": now.isoformat(timespec="minutes"), "spot": sp, **res})
+        if res is None:
+            res = load_json(FC_PATH[sp], {}) or {}
+            if res.get("evenings"):   # из файла: выкинуть уже прошедшие вечера
+                res["evenings"] = [e for e in res["evenings"] if e["date"] >= today]
+        evs[sp] = res.get("evenings") or []
+        metas[sp] = res.get("meta") or {}
+    if need and evs["medvedovka"]:
+        st["fc_at"] = now.isoformat(timespec="minutes")
+    ev, ev_k = evs["medvedovka"], evs["krasnaya"]
+    print("forecast:", ", ".join(f"{e['date'][5:]} {e['pct']}% {e['status']}" for e in ev[:7]) or "нет данных",
+          f"| recomputed={'yes' if need else 'no'} det={metas['medvedovka'].get('det', 0)} ens={metas['medvedovka'].get('ens', 0)}")
+    for sp in SPOT_IDS:
+        if need:
+            log_forecast(st, sp, evs[sp])
     if ev:
-        log_forecast(st, ev)
         if a.mode == "testpoll" and tg.token and st.get("chat_id"):
             e = ev[0]
             send_poll(tg, st, f"Тест опроса (голоса в рейтинг не идут). Сегодня после 20:00 на Медведовке {evening_line(e)}.\n{SITE}",
@@ -420,19 +533,23 @@ def main():
             e = ev[0]
             tg.call("sendMessage", chat_id=st["chat_id"], text=with_joke(st, vault, f"Проверка связи. Сегодня после 20:00: {evening_line(e)}.\n{SITE}"))
         elif slot != "calibrate":
-            notify(tg, st, vault, {"medvedovka": ev, "krasnaya": ev_k}, slot)
+            notify(tg, st, vault, evs, slot)
+    if a.mode == "auto":
+        ask_truth(tg, st)
     # анекдот раз в 4 часа днём: окна 10–14, 14–18, 18–22, 22–24
     if a.mode == "auto" and 10 <= h <= 23:
         win = f"{today}-{(h - 10) // 4}"
         if st.get("joke_win") != win and send_beat():
             st["joke_win"] = win
-    verify(cal)
+    truth = aggregate_truth(st)
+    for sp in SPOT_IDS:
+        verify(spot_cal(cal, sp), sp, truth)
     save_json(CAL, cal)
     seen = st.pop("_seen", [])
     save_json(STATE, st)
     diag = {"updates": seen[-20:], "mode": a.mode, "slot": slot,
             "telegram": bool(tg.token), "vault": vault.ok, "chat": bool(st.get("chat_id")),
-            "evenings": len(ev), "evenings_krasnaya": len(ev_k), "det": (len(b["det"]) + 1) if b else 0, "ens": len(b["ens"]) if b else 0,
+            "evenings": len(ev), "evenings_krasnaya": len(ev_k), "det": metas["medvedovka"].get("det", 0), "ens": metas["medvedovka"].get("ens", 0),
             "errors": E.ERRORS[:30]}
     lr = ROOT / "data" / "last_run.json"
     old = load_json(lr, {}); old.pop("at", None)

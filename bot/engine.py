@@ -115,7 +115,7 @@ def fetch_bundle(spot: str = "medvedovka"):
     _, lat, lon = SPOTS[spot]
     OM = om(lat, lon)
     main = get_json("https://api.open-meteo.com/v1/forecast?" + OM +
-                    "&hourly=precipitation,precipitation_probability,temperature_2m,wind_speed_10m,et0_fao_evapotranspiration&wind_speed_unit=ms")
+                    "&hourly=precipitation,precipitation_probability,temperature_2m,wind_speed_10m,et0_fao_evapotranspiration,snowfall,soil_temperature_0cm&wind_speed_unit=ms")
     if not main:
         return None
     times = main["hourly"]["time"]
@@ -134,20 +134,40 @@ def fetch_bundle(spot: str = "medvedovka"):
     return {"main": main, "det": det, "ens": ens}
 
 
-def analyze(b, cal=None):
+SNOW_T = 0.5     # при такой и ниже температуре воздуха осадки считаем снегом
+ICE_T = 0.0      # поверхность (почва 0 см) ниже нуля + вода = гололёд
+RAIN_HOUR = 0.05 # от скольки мм в час считаем «идёт дождь» для графика по часам
+
+
+def analyze(b, cal=None, now=None):
+    """Полный расчёт: вечера + почасовые данные. Логика 1-в-1 с analyze() в index.html."""
     cal = cal or {}
     weights = cal.get("weights") or {}
     share = float(cal.get("ens_share", 0.65))
     w_of = lambda n: max(0.05, float(weights.get(n, 1.0)))
+    blend = lambda pe, pd: (share * pe + (1 - share) * pd) if (pe is not None and pd is not None) else (pe if pe is not None else pd)
     h = b["main"]["hourly"]
-    t = h["time"]
+    t = h["time"]; n = len(t)
     pick = lambda k: h.get(k) or h.get(k + "_best_match")
-    P = [None if v is None else float(v) for v in (pick("precipitation") or [])]
-    E = [0.05 if v is None else float(v) for v in (pick("et0_fao_evapotranspiration") or [0.05] * len(t))]
-    temp, wind = pick("temperature_2m") or [], pick("wind_speed_10m") or []
-    det = [("Open-Meteo", wet_series(P, E))] + [(n, wet_series(s[0], E)) for n, s in b["det"] if s]
-    ens = [(n, [wet_series(s, E) for s in ss]) for n, ss in b["ens"] if len(ss) >= 5]
-    today = now_msk().strftime("%Y-%m-%d")
+    num = lambda arr, i: (None if (arr is None or i < 0 or i >= len(arr) or arr[i] is None) else float(arr[i]))
+    P = [None if v is None else float(v) for v in (pick("precipitation") or [None] * n)]
+    E = [0.05 if v is None else float(v) for v in (pick("et0_fao_evapotranspiration") or [0.05] * n)]
+    temp, wind = pick("temperature_2m"), pick("wind_speed_10m")
+    soil, snowf = pick("soil_temperature_0cm"), pick("snowfall")
+    det = [{"name": "Open-Meteo", "P": P, "w": wet_series(P, E)}] + \
+          [{"name": nm, "P": s[0], "w": wet_series(s[0], E)} for nm, s in b["det"] if s]
+    ens = [{"name": nm, "ss": ss, "ws": [wet_series(s, E) for s in ss]} for nm, ss in b["ens"] if len(ss) >= 5]
+    # средний дождь по всем расчётам ансамбля (нет ансамблей — основная модель)
+    MP = []
+    for i in range(n):
+        s = c = 0
+        for en in ens:
+            for ss in en["ss"]:
+                if ss[i] is not None:
+                    s += ss[i]; c += 1
+        MP.append(s / c if c else num(P, i))
+    now = now or now_msk()
+    today = now.strftime("%Y-%m-%d")
     out = []
     for i, tt in enumerate(t):
         if tt[11:13] != f"{W0:02d}":
@@ -155,20 +175,20 @@ def analyze(b, cal=None):
         date = tt[:10]
         if date < today:
             continue
-        if i + W_LEN > len(t):
+        if i + W_LEN > n:
             break
         d_wet = d_all = 0; ws = wt = 0.0
-        for n, w in det:
-            r = evening_wet(w, i)
+        for d in det:
+            r = evening_wet(d["w"], i)
             if r is None:
                 continue
-            d_all += 1; wt += w_of(n)
+            d_all += 1; wt += w_of(d["name"])
             if r:
-                d_wet += 1; ws += w_of(n)
+                d_wet += 1; ws += w_of(d["name"])
         e_wet = e_all = 0; shares = []
-        for n, wss in ens:
+        for en in ens:
             a = w_ = 0
-            for w in wss:
+            for w in en["ws"]:
                 r = evening_wet(w, i)
                 if r is None:
                     continue
@@ -179,22 +199,63 @@ def analyze(b, cal=None):
         p_ens = sum(shares) / len(shares) if shares else None
         if p_det is None and p_ens is None:
             continue
-        p = share * p_ens + (1 - share) * p_det if (p_det is not None and p_ens is not None) else (p_ens if p_ens is not None else p_det)
-        rain_in = sum((P[i + k] or 0.0) for k in range(W_LEN))
-        tvals = [temp[i + k] for k in range(W_LEN) if i + k < len(temp) and temp[i + k] is not None]
-        wvals = [wind[i + k] for k in range(W_LEN) if i + k < len(wind) and wind[i + k] is not None]
+        p = blend(p_ens, p_det)
+        rain_in = sum((num(MP, i + k) or 0.0) for k in range(W_LEN))
+        tv = [x for x in (num(temp, i + k) for k in range(W_LEN)) if x is not None]
+        sv = [x for x in (num(soil, i + k) for k in range(W_LEN)) if x is not None]
+        wv = [x for x in (num(wind, i + k) for k in range(W_LEN)) if x is not None]
+        # осадки с 14:00 до конца окна: какие из них выпали снегом
+        snowy = False
+        for k in range(-6, W_LEN):
+            mp, tk, sf = num(MP, i + k), num(temp, i + k), num(snowf, i + k)
+            if (mp or 0) >= RAIN_HOUR and ((tk is not None and tk <= SNOW_T) or (sf or 0) > 0):
+                snowy = True; break
+        t_min = min(tv) if tv else None
+        s_min = min(sv) if sv else t_min
+        snow = p >= MAYBE and snowy
+        ice = p >= MAYBE and not snow and s_min is not None and s_min <= ICE_T
+        status = "snow" if snow else "ice" if ice else ("go" if p >= GO else "maybe" if p >= MAYBE else "dry")
         out.append({
-            "date": date, "p": p, "pct": round(p * 100), "p_det": p_det, "p_ens": p_ens,
+            "date": date, "p": round(p, 4), "pct": round(p * 100), "p_det": p_det, "p_ens": p_ens,
             "d_wet": d_wet, "d_all": d_all, "e_wet": e_wet, "e_all": e_all,
-            "water": film_at(P, E, i - 1) + rain_in, "t_min": min(tvals) if tvals else None, "w_max": max(wvals) if wvals else 0,
-            "status": "go" if p >= GO else "maybe" if p >= MAYBE else "dry",
+            "water": round(film_at(MP, E, i - 1) + rain_in, 3), "rain_in": round(rain_in, 3),
+            "t_min": t_min, "s_min": s_min, "w_max": max(wv) if wv else 0,
+            "status": status, "snow": snow, "ice": ice, "windy": (max(wv) if wv else 0) >= 12,
         })
-    return out
+    hourly = []
+    for i, tt in enumerate(t):
+        shR, shW = [], []; mm = 0.0; mn = 0
+        for en in ens:
+            a = r = w = 0
+            for j, ss in enumerate(en["ss"]):
+                x = ss[i]
+                if x is None:
+                    continue
+                a += 1; mm += x; mn += 1
+                r += 1 if x >= RAIN_HOUR else 0
+                w += 1 if en["ws"][j][i] else 0
+            if a >= 5:
+                shR.append(r / a); shW.append(w / a)
+        rs = wsum = ws2 = 0.0
+        for d in det:
+            x = d["P"][i]
+            if x is None:
+                continue
+            wgt = w_of(d["name"]); wsum += wgt
+            rs += wgt if x >= RAIN_HOUR else 0
+            ws2 += wgt if d["w"][i] else 0
+        avg = lambda a: sum(a) / len(a) if a else None
+        pr = blend(avg(shR), rs / wsum if wsum else None)
+        pw = blend(avg(shW), ws2 / wsum if wsum else None)
+        hourly.append({"t": tt, "p": round(pr or 0, 3), "wet": round(pw or 0, 3),
+                       "mm": round(mm / mn if mn else (num(P, i) or 0), 3)})
+    return {"evenings": out, "hourly": hourly,
+            "meta": {"det": len(det), "ens": len(ens), "members": sum(len(en["ws"]) for en in ens)}}
 
 
 # ---------- verification against ERA5 reanalysis ----------
-def era5(start: str, end: str):
-    url = (f"https://archive-api.open-meteo.com/v1/archive?latitude={LAT}&longitude={LON}&timezone={TZ_Q}"
+def era5(start: str, end: str, lat: float = LAT, lon: float = LON):
+    url = (f"https://archive-api.open-meteo.com/v1/archive?latitude={lat}&longitude={lon}&timezone={TZ_Q}"
            f"&start_date={start}&end_date={end}&hourly=precipitation,et0_fao_evapotranspiration")
     return get_json(url, timeout=60)
 
