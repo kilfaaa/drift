@@ -1,11 +1,10 @@
 {
- "at": "2026-10-27T11:20",
+ "at": "2026-10-27T17:52",
  "updates": [
-  "message:group:",
   "message:group:"
  ],
  "mode": "auto",
- "slot": "noon",
+ "slot": "evening",
  "telegram": true,
  "vault": true,
  "chat": true,
