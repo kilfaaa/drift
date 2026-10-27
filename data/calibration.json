@@ -1,7 +1,7 @@
 {
  "weights": {
   "Open-Meteo": 1.68,
-  "ECMWF": 2.0,
+  "ECMWF": 1.7,
   "ECMWF AIFS": 1.62,
   "ICON": 1.7,
   "ICON-EU": 1.7,
