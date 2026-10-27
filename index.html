@@ -142,7 +142,7 @@ h2{font-size:clamp(22px,4vw,30px);text-transform:uppercase;letter-spacing:.04em}
 .bars .b{flex:1;min-width:6px;max-width:24px;display:flex;flex-direction:column;justify-content:end;align-items:center;gap:3px;height:100%}
 .bars .b i{display:block;width:100%;background:var(--fg);min-height:1px}
 .bars .b.pre i{background:var(--muted);opacity:.6}
-.bars .b.empty i{background:var(--line)}
+.bars .b.empty i,.bars .b.zero i{background:var(--line);opacity:1}
 .bars .b em{font-style:normal;font-family:var(--f-mono);font-size:9px;color:var(--muted)}
 .bars .gap{width:8px;align-self:stretch;border-left:1px dashed var(--line);margin-left:4px}
 .dnums{font-family:var(--f-mono);font-size:11px;color:var(--muted);display:grid;grid-template-columns:auto auto;gap:2px 12px;font-variant-numeric:tabular-nums;letter-spacing:.02em}
@@ -362,6 +362,7 @@ body.locked{padding-bottom:0}
         <span><i style="background:var(--go)"></i>Мокро, едем</span>
         <span><i style="background:var(--maybe)"></i>Может быть</span>
         <span><i style="background:var(--dry)"></i>Сухо</span>
+        <span><i style="background:var(--fg);width:5px;height:12px"></i>Столбик — шанс дождя в этот час</span>
       </div>
     </div>
     <div class="days" id="days"><div class="fstate"><p>Загружаем прогноз…</p></div></div>
@@ -471,6 +472,8 @@ function analyze(b){
   const ens=(b.ens||[]).map(([name,ss])=>({name,ss,ws:ss.map(s=>wetSeries(s,E))})).filter(e=>e.ws.length>=5);
   bundleMeta={det:det.length,ens:ens.length,members:ens.reduce((a,e)=>a+e.ws.length,0)};
   const v=(a,i)=>a&&a[i]!=null?+a[i]:null;
+  // средний дождь по всем расчётам ансамбля (если их нет — по основной модели): для «воды» и графика
+  const MP=t.map((_,i)=>{ let s=0,n=0; for(const e of ens) for(const ss of e.ss){ const x=ss[i]; if(x!=null){ s+=x; n++; } } return n?s/n:v(P,i); });
   const now=nowMsk(), out=[];
   for(let i=0;i<n;i++){
     if(t[i].slice(11,13)!==String(W0)) continue;
@@ -485,8 +488,8 @@ function analyze(b){
     if(pDet==null&&pEns==null) continue;
     const p=blend(pEns,pDet);
     let rainIn=0,tMin=99,wMax=0;
-    for(let k=0;k<W_LEN;k++){ rainIn+=v(P,i+k)||0; const tt=v(temp,i+k); if(tt!=null) tMin=Math.min(tMin,tt); wMax=Math.max(wMax,v(wind,i+k)||0); }
-    const water=filmAt(P,E,i-1)+rainIn;
+    for(let k=0;k<W_LEN;k++){ rainIn+=v(MP,i+k)||0; const tt=v(temp,i+k); if(tt!=null) tMin=Math.min(tMin,tt); wMax=Math.max(wMax,v(wind,i+k)||0); }
+    const water=filmAt(MP,E,i-1)+rainIn;
     const hours=[]; for(let k=-3;k<=3;k++) hours.push({h:W0+k,mm:v(P,i+k),pre:k<0});
     const status=p>=0.6?"go":p>=0.3?"maybe":"dry";
     out.push({date,p,pct:Math.round(p*100),dWet,dAll,eWet,eAll,wet:water,rainIn,tMin:tMin===99?null:tMin,wMax,status,hours,
@@ -495,9 +498,9 @@ function analyze(b){
   // per hour: chance of rain, chance of wet asphalt, mean rain amount
   out.hourly=t.map((tt,i)=>{
     const shR=[],shW=[]; let mm=0,mn=0;
-    for(const e of ens){ let a=0,r=0,w=0; e.ss.forEach((s,j)=>{ const x=s[i]; if(x==null) return; a++; mm+=x; mn++; if(x>=WET_MM) r++; if(e.ws[j][i]) w++; }); if(a>=5){ shR.push(r/a); shW.push(w/a); } }
+    for(const e of ens){ let a=0,r=0,w=0; e.ss.forEach((s,j)=>{ const x=s[i]; if(x==null) return; a++; mm+=x; mn++; if(x>=0.05) r++; if(e.ws[j][i]) w++; }); if(a>=5){ shR.push(r/a); shW.push(w/a); } }
     let rs=0,wsum=0,ws2=0;
-    for(const d of det){ const x=d.P[i]; if(x==null) continue; const w=wOf(d.name); wsum+=w; if(x>=WET_MM) rs+=w; if(d.w[i]) ws2+=w; }
+    for(const d of det){ const x=d.P[i]; if(x==null) continue; const w=wOf(d.name); wsum+=w; if(x>=0.05) rs+=w; if(d.w[i]) ws2+=w; }
     const avg=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:null;
     const mmDet=v(P,i);
     return {t:tt,p:blend(avg(shR),wsum?rs/wsum:null)??0,wet:blend(avg(shW),wsum?ws2/wsum:null)??0,mm:mn?mm/mn:(mmDet??0)};
@@ -514,20 +517,28 @@ function renderForecast(){
     box.innerHTML='<div class="fstate"><h3 style="font-size:18px">Прогноз пока не подключён</h3><p>Здесь появятся 14 вечеров с оценкой покрытия. Пока данных нет, смотри радар осадков над спотом по ссылке ниже.</p></div>';
     $("fcSource").textContent=fcMeta; renderHero(); return;
   }
-  const max=3;
+  // столбик = шанс дождя в этот час по всем моделям и ансамблям (как и итоговый %)
+  const HI=new Map((evenings.hourly||[]).map(x=>[x.t,x]));
   box.innerHTML=evenings.map(e=>{
-    const bars=e.hours.map((x,j)=>{
-      const mm=x.mm, hgt=mm==null?0:Math.max(4,Math.min(100,mm/max*100));
-      const cls=mm==null?"b empty":(x.pre?"b pre":"b");
-      return (j===3?'<span class="gap"></span>':'')+'<span class="'+cls+'" title="'+x.h+':00 — '+(mm==null?"нет данных":mm.toFixed(1)+" мм")+'"><i style="height:'+(mm?hgt:4)+'%"></i><em>'+x.h+'</em></span>';
-    }).join("");
+    const bars=[];
+    for(let hh=14;hh<W0+W_LEN;hh++){
+      const x=HI.get(e.date+"T"+String(hh).padStart(2,"0")+":00");
+      const pre=hh<W0;
+      if(hh===W0) bars.push('<span class="gap"></span>');
+      if(!x){ bars.push('<span class="b empty" title="'+hh+':00 — нет данных"><i style="height:4%"></i><em>'+(hh%2===0||!pre?hh:"&nbsp;")+'</em></span>'); continue; }
+      const p=Math.round(x.p*100), dry=p<5;
+      const cls="b"+(pre?" pre":"")+(dry?" zero":"");
+      const tip=hh+":00 — дождь "+p+"%"+(x.mm>=0.05?", ~"+x.mm.toFixed(1)+" мм":"")+", мокро "+Math.round(x.wet*100)+"%";
+      bars.push('<span class="'+cls+'" title="'+tip+'"><i style="height:'+(dry?4:Math.max(12,p))+'%"></i><em>'+(hh%2===0||!pre?hh:"&nbsp;")+'</em></span>');
+    }
+    const bars_html=bars.join("");
     const flags=[];
     if(e.ice) flags.push("около нуля — возможен гололёд");
     if(e.windy) flags.push("ветер до "+Math.round(e.wMax)+" м/с");
     return '<div class="day'+(e.isToday?" today":"")+(e.far?" far":"")+'">'+
       '<div class="dname">'+(e.isToday?"Сегодня":ruDay(e.date).split(",")[0])+'<small>'+ruDay(e.date).split(", ").slice(-1)[0]+'</small></div>'+
       '<div class="dstat"><span class="pill '+e.status+'">'+LABEL[e.status]+'</span><div class="bigpct '+e.status+'">'+e.pct+'<small>%</small></div></div>'+
-      '<div class="bars" aria-label="Осадки по часам с 17 до 23">'+bars+'</div>'+
+      '<div class="bars" aria-label="Шанс дождя по часам с 14 до 23">'+bars_html+'</div>'+
       '<div class="dnums"><span>вода</span><b>'+e.wet.toFixed(1)+' мм</b><span>модели</span><b>'+e.dWet+'/'+e.dAll+'</b>'+(e.eAll?'<span>ансамбль</span><b>'+e.eWet+'/'+e.eAll+'</b>':'')+'<span>темп.</span><b>'+(e.tMin==null?"—":Math.round(e.tMin)+'°')+'</b></div>'+
       (flags.length?'<div class="flags">'+flags.map(f=>'<span>'+f+'</span>').join("")+'</div>':'')+
     '</div>';
