@@ -1,12 +1,13 @@
 {
- "at": "2026-10-29T18:29",
+ "at": "2026-10-29T22:45",
  "updates": [
+  "message:group:",
   "message:group:",
   "message:group:",
   "message:group:"
  ],
  "mode": "auto",
- "slot": "evening",
+ "slot": "collect",
  "telegram": true,
  "vault": true,
  "chat": true,
