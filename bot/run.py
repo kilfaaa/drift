@@ -448,7 +448,7 @@ def calibrate_models(cal_sp: dict, sp: str, days: int = 365):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--mode", default="auto", choices=["auto", "noon", "evening", "collect", "calibrate", "test", "testpoll", "joke", "jokebeat"])
+    ap.add_argument("--mode", default="auto", choices=["auto", "noon", "evening", "collect", "calibrate", "test", "testpoll", "joke", "jokebeat", "tomorrow"])
     ap.add_argument("--who", default="")
     a = ap.parse_args()
     st = load_json(STATE, {})
@@ -502,7 +502,7 @@ def main():
     evs, metas = {}, {}
     last = st.get("fc_at")
     fresh = last and (now - datetime.fromisoformat(last)).total_seconds() < 55 * 60
-    need = a.mode in ("noon", "evening", "test", "testpoll", "calibrate") or not fresh or any(not FC_PATH[sp].exists() for sp in SPOT_IDS)
+    need = a.mode in ("noon", "evening", "test", "testpoll", "calibrate", "tomorrow") or not fresh or any(not FC_PATH[sp].exists() for sp in SPOT_IDS)
     for sp in SPOT_IDS:
         res = None
         if need:
@@ -532,6 +532,21 @@ def main():
         elif a.mode == "test" and tg.token and st.get("chat_id"):
             e = ev[0]
             tg.call("sendMessage", chat_id=st["chat_id"], text=with_joke(st, vault, f"Проверка связи. Сегодня после 20:00: {evening_line(e)}.\n{SITE}"))
+        elif a.mode == "tomorrow" and tg.token and st.get("chat_id"):
+            tmr = (now + timedelta(days=1)).strftime("%Y-%m-%d")
+            names = {"medvedovka": "Медведовка", "krasnaya": "KAPANY"}
+            verdict = {"go": "едем", "maybe": "может быть", "dry": "сухо", "snow": "снег", "ice": "гололёд"}
+            lines = []
+            for sp in SPOT_IDS:
+                e = next((x for x in evs[sp] if x["date"] == tmr), None)
+                if e:
+                    extra = f", воздух от {round(e['t_min'])}°" if e.get("t_min") is not None else ""
+                    lines.append(f"{names[sp]}: {verdict.get(e['status'], e['status'])} — {evening_line(e)}{extra}")
+            if lines:
+                d = datetime.strptime(tmr, "%Y-%m-%d")
+                dn = ["понедельник", "вторник", "среда", "четверг", "пятница", "суббота", "воскресенье"][d.weekday()]
+                tg.call("sendMessage", chat_id=st["chat_id"],
+                        text=f"Прогноз на завтра ({dn}, {ru_date(tmr)}) после 20:00:\n" + "\n".join(lines) + f"\n{SITE}")
         elif slot != "calibrate":
             notify(tg, st, vault, evs, slot)
     if a.mode == "auto":

@@ -12,7 +12,7 @@ on:
         description: "Режим"
         type: choice
         default: auto
-        options: [auto, noon, evening, collect, calibrate, test, testpoll, joke, jokebeat]
+        options: [auto, noon, evening, collect, calibrate, test, testpoll, joke, jokebeat, tomorrow]
       who:
         description: "Для режима joke: про кого анекдот"
         type: string
