@@ -1,8 +1,8 @@
 {
- "at": "2026-10-30T16:27",
+ "at": "2026-10-30T21:48",
  "updates": [],
  "mode": "auto",
- "slot": "evening",
+ "slot": "collect",
  "telegram": true,
  "vault": true,
  "chat": true,
@@ -11,7 +11,6 @@
  "det": 8,
  "ens": 4,
  "errors": [
-  "api.open-meteo.com: URLError <urlopen error _ssl.c:993: The handshake operation timed out>",
   "api.open-meteo.com: URLError <urlopen error _ssl.c:993: The handshake operation timed out>"
  ]
 }
