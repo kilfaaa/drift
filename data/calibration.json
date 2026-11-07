@@ -1,0 +1,234 @@
+{
+ "weights": {
+  "Open-Meteo": 1.64,
+  "ECMWF": 1.67,
+  "ECMWF AIFS": 1.53,
+  "ICON": 1.67,
+  "ICON-EU": 1.67,
+  "GFS": 1.5,
+  "UKMO": 1.56,
+  "GEM": 1.42
+ },
+ "models": {
+  "Open-Meteo": {
+   "n": 366,
+   "acc": 0.863,
+   "bs": 0.1366
+  },
+  "ECMWF": {
+   "n": 366,
+   "acc": 0.929,
+   "bs": 0.071
+  },
+  "ECMWF AIFS": {
+   "n": 366,
+   "acc": 0.852,
+   "bs": 0.1475
+  },
+  "ICON": {
+   "n": 366,
+   "acc": 0.866,
+   "bs": 0.1339
+  },
+  "ICON-EU": {
+   "n": 366,
+   "acc": 0.866,
+   "bs": 0.1339
+  },
+  "GFS": {
+   "n": 366,
+   "acc": 0.85,
+   "bs": 0.1503
+  },
+  "UKMO": {
+   "n": 366,
+   "acc": 0.855,
+   "bs": 0.1448
+  },
+  "GEM": {
+   "n": 366,
+   "acc": 0.842,
+   "bs": 0.1585
+  }
+ },
+ "base_rate": 0.279,
+ "calibrated": "2026-10-31",
+ "period": [
+  "2025-10-24",
+  "2026-10-24"
+ ],
+ "journal": [
+  {
+   "date": "2026-10-23",
+   "pct": 0,
+   "wet": false,
+   "src": "era5"
+  },
+  {
+   "date": "2026-10-24",
+   "pct": 0,
+   "wet": false,
+   "src": "era5"
+  },
+  {
+   "date": "2026-10-25",
+   "pct": 0,
+   "wet": false,
+   "src": "era5"
+  },
+  {
+   "date": "2026-10-26",
+   "pct": 0,
+   "wet": false,
+   "src": "era5"
+  },
+  {
+   "date": "2026-10-27",
+   "pct": 0,
+   "wet": false,
+   "src": "era5"
+  },
+  {
+   "date": "2026-10-28",
+   "pct": 0,
+   "wet": false,
+   "src": "era5"
+  },
+  {
+   "date": "2026-10-29",
+   "pct": 7,
+   "wet": false,
+   "src": "era5"
+  },
+  {
+   "date": "2026-10-30",
+   "pct": 25,
+   "wet": true,
+   "src": "era5"
+  },
+  {
+   "date": "2026-10-31",
+   "pct": 2,
+   "wet": false,
+   "src": "era5"
+  },
+  {
+   "date": "2026-11-01",
+   "pct": 3,
+   "wet": false,
+   "src": "era5"
+  },
+  {
+   "date": "2026-11-04",
+   "pct": 99,
+   "wet": false,
+   "src": "spot"
+  }
+ ],
+ "verified": {
+  "n": 11,
+  "hits": 9,
+  "days": 11,
+  "spot": 1
+ },
+ "spots": {
+  "krasnaya": {
+   "weights": {
+    "Open-Meteo": 1.89,
+    "ECMWF": 1.89,
+    "ECMWF AIFS": 1.52,
+    "ICON": 1.86,
+    "ICON-EU": 1.86,
+    "GFS": 1.84,
+    "UKMO": 1.57,
+    "GEM": 1.63
+   },
+   "models": {
+    "Open-Meteo": {
+     "n": 366,
+     "acc": 0.885,
+     "bs": 0.1148
+    },
+    "ECMWF": {
+     "n": 366,
+     "acc": 0.926,
+     "bs": 0.0738
+    },
+    "ECMWF AIFS": {
+     "n": 366,
+     "acc": 0.847,
+     "bs": 0.153
+    },
+    "ICON": {
+     "n": 366,
+     "acc": 0.883,
+     "bs": 0.1175
+    },
+    "ICON-EU": {
+     "n": 366,
+     "acc": 0.883,
+     "bs": 0.1175
+    },
+    "GFS": {
+     "n": 366,
+     "acc": 0.88,
+     "bs": 0.1202
+    },
+    "UKMO": {
+     "n": 366,
+     "acc": 0.852,
+     "bs": 0.1475
+    },
+    "GEM": {
+     "n": 366,
+     "acc": 0.858,
+     "bs": 0.1421
+    }
+   },
+   "base_rate": 0.292,
+   "calibrated": "2026-11-05",
+   "period": [
+    "2025-10-29",
+    "2026-10-29"
+   ],
+   "journal": [
+    {
+     "date": "2026-10-28",
+     "pct": 0,
+     "wet": false,
+     "src": "era5"
+    },
+    {
+     "date": "2026-10-29",
+     "pct": 31,
+     "wet": false,
+     "src": "era5"
+    },
+    {
+     "date": "2026-10-30",
+     "pct": 25,
+     "wet": true,
+     "src": "era5"
+    },
+    {
+     "date": "2026-10-31",
+     "pct": 5,
+     "wet": false,
+     "src": "era5"
+    },
+    {
+     "date": "2026-11-01",
+     "pct": 2,
+     "wet": false,
+     "src": "era5"
+    }
+   ],
+   "verified": {
+    "n": 4,
+    "hits": 3,
+    "days": 5,
+    "spot": 0
+   }
+  }
+ }
+}

@@ -1,0 +1,50 @@
+{
+ "logged": "2026-10-27",
+ "offset": 225345830,
+ "hello": true,
+ "announced": [],
+ "polls": {
+  "5395465653857557145": {
+   "date": "2026-10-23",
+   "kind": "test"
+  },
+  "5429589856219043275": {
+   "date": "2026-11-04",
+   "kind": "weather",
+   "spot": "medvedovka"
+  },
+  "5429589856219043888": {
+   "date": "2026-11-04",
+   "kind": "truth",
+   "spot": "medvedovka"
+  },
+  "5435946437881894670": {
+   "date": "2026-11-06",
+   "kind": "weather",
+   "spot": "krasnaya"
+  },
+  "5435946437881894799": {
+   "date": "2026-11-06",
+   "kind": "truth",
+   "spot": "krasnaya"
+  },
+  "5438198237695579885": {
+   "date": "2026-11-07",
+   "kind": "weather",
+   "spot": "medvedovka"
+  }
+ },
+ "joke_n": 5,
+ "joke_rot": 41,
+ "joke_win": "2026-11-07-1",
+ "fc_at": "2026-11-07T14:48+03:00",
+ "logged_spots": {
+  "medvedovka": "2026-11-07",
+  "krasnaya": "2026-11-07"
+ },
+ "truth_asked": [
+  "2026-11-04",
+  "2026-11-06"
+ ],
+ "heads_up": "2026-11-06"
+}

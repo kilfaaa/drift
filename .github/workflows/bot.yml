@@ -1,0 +1,57 @@
+name: Прогноз и бот
+
+on:
+  schedule:
+    - cron: "7,37 * * * *"   # каждые полчаса; что делать, бот решает сам по времени МСК
+  push:
+    branches: [main]
+    paths: ["crew/vault.json", "bot/**", ".github/workflows/bot.yml"]
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "Режим"
+        type: choice
+        default: auto
+        options: [auto, noon, evening, collect, calibrate, test, testpoll, joke, jokebeat, tomorrow]
+      who:
+        description: "Для режима joke: про кого анекдот"
+        type: string
+        default: ""
+
+permissions:
+  contents: write
+
+concurrency:
+  group: repo-write
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - run: pip install --quiet cryptography==43.0.3
+      - name: Бот
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          CREW_BOT_CODE: ${{ secrets.CREW_BOT_CODE }}
+        run: python bot/run.py --mode "${{ inputs.mode || 'auto' }}" --who "${{ inputs.who }}"
+      - name: Сохранить журнал и статистику
+        run: |
+          git config user.name "medvedovka-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add bot/state.json data/
+          [ -f crew/stats.json ] && git add crew/stats.json
+          if git diff --cached --quiet; then echo "без изменений"; exit 0; fi
+          git commit -m "бот: прогноз, журнал, статистика"
+          # при одновременной правке state.json побеждает свежая версия бота
+          for i in 1 2 3 4; do
+            if git pull --rebase -X theirs origin main && git push origin HEAD:main; then exit 0; fi
+            git rebase --abort 2>/dev/null || true
+            sleep $((i * 5))
+          done
+          exit 1
