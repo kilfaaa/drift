@@ -305,6 +305,7 @@ body.locked{padding-bottom:0}
       <div class="spots" id="spots" role="tablist" aria-label="Точка">
         <button type="button" role="tab" data-spot="medvedovka" aria-selected="true">Medvedovka<b></b></button>
         <button type="button" role="tab" data-spot="krasnaya" aria-selected="false">KAPANY<b></b></button>
+        <button type="button" role="tab" data-spot="mega" aria-selected="false">MEGA<b></b></button>
       </div>
       <h1 class="spot-name" id="spot-h">Medvedovka</h1>
       <div class="timer" id="timer" role="timer" aria-live="off">
@@ -428,7 +429,8 @@ const dayDiff=(a,b)=>Math.round((new Date(b+"T00:00:00Z")-new Date(a+"T00:00:00Z
    Wet asphalt is a water balance: rain adds water, evaporation removes it. */
 const SPOTS=[
   {id:"medvedovka",title:"Medvedovka",ru:"Медведовка",lat:45.383020,lon:39.025310},
-  {id:"krasnaya",title:"KAPANY",ru:"KAPANY",lat:45.102440,lon:38.991828}];
+  {id:"krasnaya",title:"KAPANY",ru:"KAPANY",lat:45.102440,lon:38.991828},
+  {id:"mega",title:"MEGA",ru:"MEGA",lat:45.016290,lon:38.933109}];
 let SPOT=SPOTS[0]; const DATA={};
 const omq=sp=>"latitude="+sp.lat+"&longitude="+sp.lon+"&timezone=Europe%2FMoscow&past_days=1&forecast_days=14";
 const mainUrl=sp=>"https://api.open-meteo.com/v1/forecast?"+omq(sp)+
@@ -606,8 +608,10 @@ function renderHero(){
   else if(e.status==="ice") line="Асфальт будет мокрым (шанс <b>"+e.pct+"%</b>), но дорога подмерзает: поверхность "+(e.sMin!=null?"до <b>"+Math.round(e.sMin)+"°</b>":"ниже нуля")+". Это гололёд.";
   else line="Шанс мокрого асфальта всего <b>"+e.pct+"%</b>, будет сухо.";
   if(e.status!=="go") line+= g?" Ближайший мокрый вечер — <b>"+(g.isToday?"сегодня":ruDay(g.date))+"</b>.":(tg?" Мокрых вечеров не видно, ближайший «может быть» — <b>"+ruDay(tg.e.date)+", "+tg.e.pct+"%</b>.":" Мокрых вечеров в ближайшие 14 дней пока не видно.");
-  const other=SPOTS.find(x=>x!==SPOT), oe=DATA[other.id]&&DATA[other.id].evenings&&DATA[other.id].evenings[0];
-  if(e.status!=="go"&&oe&&oe.status==="go"&&oe.date===e.date) line+='<br><button type="button" class="alt" id="altSpot">'+(other.id==="krasnaya"?"На KAPANY":"На Медведовке")+' мокро '+oe.pct+'% →</button>';
+  // первая по порядку другая точка, где в этот же вечер мокро
+  const other=SPOTS.find(x=>{ if(x===SPOT) return false; const o=DATA[x.id]&&DATA[x.id].evenings&&DATA[x.id].evenings[0]; return o&&o.status==="go"&&o.date===e.date; });
+  const oe=other&&DATA[other.id].evenings[0];
+  if(e.status!=="go"&&oe) line+='<br><button type="button" class="alt" id="altSpot">На '+(other.id==="medvedovka"?"Медведовке":other.ru)+' мокро '+oe.pct+'% →</button>';
   txt.innerHTML=line;
   const alt=$("altSpot"); if(alt) alt.onclick=()=>{ setSpot(other.id,true); scrollTo({top:0,behavior:"smooth"}); };
   const chips=[];
@@ -842,7 +846,7 @@ let meets=[],rsvps=[],drivers=[],names={},hosted=false;
 
 async function init(){
   renderForecast();
-  if(location.hash==="#krasnaya") setSpot("krasnaya");
+  const hs=location.hash.slice(1); if(hs&&SPOTS.some(x=>x.id===hs&&x!==SPOTS[0])) setSpot(hs);
   const live=loadAll();
   if(!window.claude||!claude.use){ await loadStatic(); await live; if(!liveOk) fcMeta="Не удалось загрузить прогноз. Обнови страницу позже."; renderForecast(); return; }
   [db,user]=await Promise.all([claude.use("db"),claude.use("user")]);

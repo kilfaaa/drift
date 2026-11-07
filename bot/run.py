@@ -3,7 +3,7 @@
 
 Каждый запуск (раз в полчаса):
   1. забирает новые события из Telegram (добавление в чат, голоса в опросах);
-  2. раз в час считает прогноз на 14 вечеров для обеих точек и кладёт его в data/fc_*.json для сайта;
+  2. раз в час считает прогноз на 14 вечеров для всех точек и кладёт его в data/fc_*.json для сайта;
   3. раз в день, в обед, пишет прогноз в журнал;
   4. объявляет новые сборы, в обед и вечером присылает опрос, если вечером мокро;
   5. после вечера с опросом спрашивает «как было на споте»;
@@ -33,9 +33,11 @@ import engine as E  # noqa: E402
 STATE = ROOT / "bot" / "state.json"
 CAL = ROOT / "data" / "calibration.json"
 TRUTH = ROOT / "data" / "ground_truth.json"   # ответы «как было на споте» (только счётчики, без имён)
-SPOT_IDS = ["medvedovka", "krasnaya"]
-LOG_PATH = {"medvedovka": ROOT / "data" / "forecast_log.csv", "krasnaya": ROOT / "data" / "forecast_log_krasnaya.csv"}
-VERIFY_PATH = {"medvedovka": ROOT / "data" / "verify.csv", "krasnaya": ROOT / "data" / "verify_krasnaya.csv"}
+SPOT_IDS = ["medvedovka", "krasnaya", "mega"]   # порядок = приоритет: основная, потом запасные
+LOG_PATH = {"medvedovka": ROOT / "data" / "forecast_log.csv", "krasnaya": ROOT / "data" / "forecast_log_krasnaya.csv",
+            "mega": ROOT / "data" / "forecast_log_mega.csv"}
+VERIFY_PATH = {"medvedovka": ROOT / "data" / "verify.csv", "krasnaya": ROOT / "data" / "verify_krasnaya.csv",
+               "mega": ROOT / "data" / "verify_mega.csv"}
 FC_PATH = {sp: ROOT / "data" / f"fc_{sp}.json" for sp in SPOT_IDS}   # готовый прогноз для сайта
 TRUTH_OPTS = ["Мокро", "Сухо", "Не ездили"]
 
@@ -46,7 +48,7 @@ def spot_cal(cal: dict, sp: str) -> dict:
 
 
 def spot_loc(sp: str) -> str:
-    return "Медведовке" if sp == "medvedovka" else "KAPANY"
+    return "Медведовке" if sp == "medvedovka" else E.SPOTS[sp][0]
 SITE = "https://kilfaaa.github.io/drift/"
 LOG_FIELDS = ["issued", "date", "lead", "pct", "p_det", "p_ens", "d_wet", "d_all", "e_wet", "e_all", "status"]
 RU_WD = ["пн", "вт", "ср", "чт", "пт", "сб", "вс"]
@@ -243,23 +245,32 @@ def notify(tg: TG, st: dict, vault: Vault, evs: dict, slot: str):
     if not tg.token or not chat:
         return
     if not st.get("hello"):
-        tg.call("sendMessage", chat_id=chat, text="Я на месте. Буду писать сюда, когда на Медведовке после 20:00 будет мокро (или на KAPANY, если на Медведовке сухо), и присылать опросы «Еду / Не еду».\n" + SITE)
+        tg.call("sendMessage", chat_id=chat, text="Я на месте. Буду писать сюда, когда на Медведовке после 20:00 будет мокро (или на запасных KAPANY и MEGA, если на Медведовке сухо), и присылать опросы «Еду / Не еду».\n" + SITE)
         st["hello"] = True
     today = E.now_msk().strftime("%Y-%m-%d")
     tomorrow = (E.now_msk() + timedelta(days=1)).strftime("%Y-%m-%d")
     by = {sp: {e["date"]: e for e in ev} for sp, ev in evs.items()}
-    M, K = by.get("medvedovka", {}), by.get("krasnaya", {})
     polls = st.get("polls", {})
     polled = {p["date"] for p in polls.values() if p.get("kind") in ("weather", "meet")}
 
     def pick(d):
-        """Куда ехать в этот вечер: Медведовка, если там мокро, иначе запасные KAPANY."""
-        m, k = M.get(d), K.get(d)
-        if m and m["status"] == "go":
-            return "medvedovka", m, k
-        if k and k["status"] == "go":
-            return "krasnaya", k, m
-        return None, m, k
+        """Куда ехать в этот вечер: первая по приоритету точка, где мокро (Медведовка, потом KAPANY, потом MEGA).
+        Третьим возвращаем вечер на Медведовке (для «там сухо»)."""
+        m = by.get("medvedovka", {}).get(d)
+        for sp in SPOT_IDS:
+            e = by.get(sp, {}).get(d)
+            if e and e["status"] == "go":
+                return sp, e, m
+        return None, m, m
+
+    def also_wet(d, skip):
+        """Остальные точки, где в этот вечер тоже мокро."""
+        out = []
+        for sp in SPOT_IDS:
+            e = by.get(sp, {}).get(d)
+            if sp != skip and e and e["status"] == "go":
+                out.append(f"{E.SPOTS[sp][0]} {e['pct']}%")
+        return out
 
     # новые сборы
     ann = st.setdefault("announced", [])
@@ -283,11 +294,12 @@ def notify(tg: TG, st: dict, vault: Vault, evs: dict, slot: str):
         pre = "" if slot == "noon" else "Прогноз улучшился. "
         if sp == "medvedovka":
             text = f"{pre}Сегодня после 20:00 на Медведовке {evening_line(e)}."
-            if other and other["status"] == "go":
-                text += f"\nНа KAPANY тоже мокро ({other['pct']}%)."
         else:
             text = (f"{pre}Запасной вариант: на Медведовке сегодня сухо ({other['pct'] if other else 0}%), "
-                    f"а на KAPANY {evening_line(e)}.")
+                    f"а на {spot_loc(sp)} {evening_line(e)}.")
+        more = also_wet(today, sp)
+        if more:
+            text += "\nТоже мокро: " + ", ".join(more) + "."
         send_poll(tg, st, f"{text}\n{SITE}", f"Сегодня 20:00, {E.SPOTS[sp][0]}, мокро {e['pct']}%. Едешь?", today, "weather", vault, sp)
     elif slot == "evening" and today in polled and st.get("cancelled") != today:
         last = [p for p in polls.values() if p["date"] == today and p.get("kind") in ("weather", "meet")]
@@ -298,7 +310,7 @@ def notify(tg: TG, st: dict, vault: Vault, evs: dict, slot: str):
             why = {"snow": "к вечеру пойдёт снег", "ice": "к вечеру дорога подмёрзнет, будет гололёд"}.get(cur["status"], f"к вечеру мокро всего {cur['pct']}%")
             text = f"Отбой: на {spot_loc(psp)} {why}."
             if alt_sp and alt_sp != psp:
-                text += f" Зато на {'Медведовке' if alt_sp == 'medvedovka' else 'KAPANY'} мокро {alt_e['pct']}%."
+                text += f" Зато на {spot_loc(alt_sp)} мокро {alt_e['pct']}%."
             tg.call("sendMessage", chat_id=chat, text=with_joke(st, vault, text))
             st["cancelled"] = today
     # снег или гололёд сегодня: опрос не шлём, но предупреждаем один раз
@@ -311,7 +323,7 @@ def notify(tg: TG, st: dict, vault: Vault, evs: dict, slot: str):
             st["winter_note"] = f"{today}-{wsp}"
     tsp, t, tother = pick(tomorrow)
     if slot == "noon" and tsp and st.get("heads_up") != tomorrow and tomorrow not in polled:
-        where = "на Медведовке" if tsp == "medvedovka" else "на KAPANY (на Медведовке сухо)"
+        where = "на Медведовке" if tsp == "medvedovka" else f"на {spot_loc(tsp)} (на Медведовке сухо)"
         tg.call("sendMessage", chat_id=chat, text=with_joke(st, vault, f"Завтра ({ru_date(tomorrow)}) после 20:00 {where} {evening_line(t)}. Опрос пришлю завтра в обед, если прогноз устоит."))
         st["heads_up"] = tomorrow
 
@@ -563,7 +575,7 @@ def main():
             tg.call("sendMessage", chat_id=st["chat_id"], text=with_joke(st, vault, f"Проверка связи. Сегодня после 20:00: {evening_line(e)}.\n{SITE}"))
         elif a.mode == "tomorrow" and tg.token and st.get("chat_id"):
             tmr = (now + timedelta(days=1)).strftime("%Y-%m-%d")
-            names = {"medvedovka": "Медведовка", "krasnaya": "KAPANY"}
+            names = {sp: E.SPOTS[sp][0] for sp in SPOT_IDS}
             verdict = {"go": "едем", "maybe": "может быть", "dry": "сухо", "snow": "снег", "ice": "гололёд"}
             lines = []
             for sp in SPOT_IDS:
@@ -593,7 +605,7 @@ def main():
     save_state(st, vault)
     diag = {"updates": seen[-20:], "mode": a.mode, "slot": slot,
             "telegram": bool(tg.token), "vault": vault.ok, "chat": bool(st.get("chat_id")),
-            "evenings": len(ev), "evenings_krasnaya": len(ev_k), "det": metas["medvedovka"].get("det", 0), "ens": metas["medvedovka"].get("ens", 0),
+            "evenings": len(ev), "evenings_krasnaya": len(ev_k), "evenings_mega": len(evs.get("mega") or []), "det": metas["medvedovka"].get("det", 0), "ens": metas["medvedovka"].get("ens", 0),
             "errors": E.ERRORS[:30]}
     lr = ROOT / "data" / "last_run.json"
     old = load_json(lr, {}); old.pop("at", None)
