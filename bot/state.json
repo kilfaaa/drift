@@ -1,6 +1,6 @@
 {
  "logged": "2026-10-27",
- "offset": 225345830,
+ "offset": 225345834,
  "hello": true,
  "announced": [],
  "polls": {
@@ -37,10 +37,11 @@
  "joke_n": 5,
  "joke_rot": 41,
  "joke_win": "2026-11-07-1",
- "fc_at": "2026-11-07T14:48+03:00",
+ "fc_at": "2026-11-07T15:54+03:00",
  "logged_spots": {
   "medvedovka": "2026-11-07",
-  "krasnaya": "2026-11-07"
+  "krasnaya": "2026-11-07",
+  "mega": "2026-11-07"
  },
  "truth_asked": [
   "2026-11-04",
