@@ -2,12 +2,12 @@
  "weights": {
   "Open-Meteo": 1.64,
   "ECMWF": 1.67,
-  "ECMWF AIFS": 1.53,
+  "ECMWF AIFS": 1.61,
   "ICON": 1.67,
   "ICON-EU": 1.67,
-  "GFS": 1.5,
+  "GFS": 1.56,
   "UKMO": 1.56,
-  "GEM": 1.42
+  "GEM": 1.4
  },
  "models": {
   "Open-Meteo": {
@@ -22,8 +22,8 @@
   },
   "ECMWF AIFS": {
    "n": 366,
-   "acc": 0.852,
-   "bs": 0.1475
+   "acc": 0.861,
+   "bs": 0.1393
   },
   "ICON": {
    "n": 366,
@@ -37,8 +37,8 @@
   },
   "GFS": {
    "n": 366,
-   "acc": 0.85,
-   "bs": 0.1503
+   "acc": 0.855,
+   "bs": 0.1448
   },
   "UKMO": {
    "n": 366,
@@ -47,15 +47,15 @@
   },
   "GEM": {
    "n": 366,
-   "acc": 0.842,
-   "bs": 0.1585
+   "acc": 0.839,
+   "bs": 0.1612
   }
  },
  "base_rate": 0.279,
- "calibrated": "2026-10-31",
+ "calibrated": "2026-11-08",
  "period": [
-  "2025-10-24",
-  "2026-10-24"
+  "2025-11-01",
+  "2026-11-01"
  ],
  "journal": [
   {
@@ -119,6 +119,12 @@
    "src": "era5"
   },
   {
+   "date": "2026-11-02",
+   "pct": 0,
+   "wet": false,
+   "src": "era5"
+  },
+  {
    "date": "2026-11-04",
    "pct": 99,
    "wet": false,
@@ -126,9 +132,9 @@
   }
  ],
  "verified": {
-  "n": 11,
-  "hits": 9,
-  "days": 11,
+  "n": 12,
+  "hits": 10,
+  "days": 12,
   "spot": 1
  },
  "spots": {
@@ -221,12 +227,18 @@
      "pct": 2,
      "wet": false,
      "src": "era5"
+    },
+    {
+     "date": "2026-11-02",
+     "pct": 0,
+     "wet": false,
+     "src": "era5"
     }
    ],
    "verified": {
-    "n": 4,
-    "hits": 3,
-    "days": 5,
+    "n": 5,
+    "hits": 4,
+    "days": 6,
     "spot": 0
    }
   },
