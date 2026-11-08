@@ -74,7 +74,8 @@ jobs:
       - name: Адрес для прогнозного бота
         if: env.CF_OK == '1'
         run: |
+          git checkout -- worker/wrangler.toml   # там подставлен id KV, в репозиторий не нужен
           echo "{\"url\": \"$URL\"}" > data/worker.json
           git config user.name "drift-bot"; git config user.email "drift-bot@users.noreply.github.com"
           git add data/worker.json
-          git diff --cached --quiet || { git commit -qm "Адрес живого бота"; for i in 1 2 3 4; do git pull -q --rebase -X theirs && git push -q && break; sleep 3; done; }
+          git diff --cached --quiet || { git commit -qm "Адрес живого бота"; ok=0; for i in 1 2 3 4; do git pull -q --rebase -X theirs && git push -q && { ok=1; break; }; sleep 3; done; [ $ok = 1 ] || { echo "::error::не удалось сохранить адрес"; exit 1; }; }
