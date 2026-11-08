@@ -1,6 +1,14 @@
 {
- "at": "2026-11-08T22:26",
- "updates": [],
+ "at": "2026-11-08T22:47",
+ "updates": [
+  "my_chat_member:group:administrator",
+  "message:group:",
+  "message:group:",
+  "message:group:",
+  "message:group:",
+  "message:group:",
+  "message:group:"
+ ],
  "mode": "auto",
  "slot": "collect",
  "telegram": true,
