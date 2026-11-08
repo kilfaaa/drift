@@ -143,11 +143,31 @@ def save_state(st: dict, vault: "Vault"):
 
 
 # ---------- шаги ----------
+def worker_updates(tg: TG, offset: int):
+    """Когда работает живой бот на Cloudflare, Telegram шлёт обновления ему (webhook), а он хранит голоса для нас.
+    None — живого бота нет или он не ответил (тогда getUpdates)."""
+    url = (load_json(ROOT / "data" / "worker.json", {}) or {}).get("url")
+    if not url or not tg.token:
+        return None
+    import hashlib
+    key = hashlib.sha256(f"updates:{tg.token}".encode()).hexdigest()
+    try:
+        req = urllib.request.Request(f"{url}/updates?offset={offset}", headers={"Authorization": f"Bearer {key}", **E.UA})
+        with urllib.request.urlopen(req, timeout=40) as r:
+            j = json.loads(r.read().decode())
+        return (j.get("result") or []) if j.get("ok") else []
+    except Exception as e:
+        print(f"worker updates failed: {e}")
+        return []   # webhook стоит, getUpdates всё равно не сработает
+
+
 def collect_updates(tg: TG, st: dict, vault: Vault):
     if not tg.token:
         return
-    ups = tg.call("getUpdates", offset=st.get("offset", 0), timeout=0,
-                  allowed_updates=["message", "edited_message", "my_chat_member", "poll_answer"]) or []
+    ups = worker_updates(tg, st.get("offset", 0))
+    if ups is None:   # живого бота нет — забираем напрямую из Telegram
+        ups = tg.call("getUpdates", offset=st.get("offset", 0), timeout=0,
+                      allowed_updates=["message", "edited_message", "my_chat_member", "poll_answer"]) or []
     changed_stats = False
     seen = st.setdefault("_seen", [])
     for u in ups:

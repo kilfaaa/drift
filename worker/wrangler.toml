@@ -1,0 +1,14 @@
+name = "medvedrift"
+main = "index.js"
+compatibility_date = "2025-06-01"
+workers_dev = true
+
+[ai]
+binding = "AI"
+
+[[kv_namespaces]]
+binding = "KV"
+id = "KV_ID"   # подставляется при деплое (.github/workflows/worker.yml)
+
+[observability]
+enabled = true

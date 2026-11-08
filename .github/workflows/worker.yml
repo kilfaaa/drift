@@ -1,0 +1,80 @@
+name: Живой бот (Cloudflare)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ["worker/**", ".github/workflows/worker.yml", "crew/vault.json"]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: worker-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v5
+      - name: Проверка секретов
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ] || [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
+            echo "::warning::Нет секретов CLOUDFLARE_API_TOKEN / CLOUDFLARE_ACCOUNT_ID — живой бот не развёрнут"
+          else echo "CF_OK=1" >> "$GITHUB_ENV"; fi
+      - uses: actions/setup-python@v6
+        if: env.CF_OK == '1'
+        with: { python-version: "3.12" }
+      - uses: actions/setup-node@v5
+        if: env.CF_OK == '1'
+        with: { node-version: "22" }
+      - run: pip install -q cryptography==43.0.3
+        if: env.CF_OK == '1'
+      - name: Секреты из сейфа
+        if: env.CF_OK == '1'
+        env:
+          CREW_BOT_CODE: ${{ secrets.CREW_BOT_CODE }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        run: python tools/worker_secrets.py "$RUNNER_TEMP/sec.json"
+      - name: Хранилище KV
+        if: env.CF_OK == '1'
+        working-directory: worker
+        run: |
+          W="npx --yes wrangler@4"
+          ID=$($W kv namespace list 2>/dev/null | python3 -c "import json,sys;print(next((n['id'] for n in json.load(sys.stdin) if n['title'] in ('medvedrift-KV','KV','medvedrift')),''))" || true)
+          if [ -z "$ID" ]; then
+            $W kv namespace create KV > "$RUNNER_TEMP/kv.txt" 2>&1 || cat "$RUNNER_TEMP/kv.txt"
+            ID=$(grep -oE '[0-9a-f]{32}' "$RUNNER_TEMP/kv.txt" | head -1)
+          fi
+          [ -n "$ID" ] || { echo "::error::Не удалось создать KV"; exit 1; }
+          sed -i "s/KV_ID/$ID/" wrangler.toml
+      - name: Деплой
+        if: env.CF_OK == '1'
+        working-directory: worker
+        run: |
+          npx --yes wrangler@4 deploy 2>&1 | tee "$RUNNER_TEMP/deploy.txt"
+          URL=$(grep -oE 'https://[a-z0-9.-]+\.workers\.dev' "$RUNNER_TEMP/deploy.txt" | head -1)
+          [ -n "$URL" ] || { echo "::error::Нет адреса workers.dev — открой Workers & Pages в Cloudflare и выбери поддомен"; exit 1; }
+          echo "URL=$URL" >> "$GITHUB_ENV"
+          npx --yes wrangler@4 secret bulk "$RUNNER_TEMP/sec.json" > /dev/null
+      - name: Webhook Telegram
+        if: env.CF_OK == '1'
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        run: |
+          SECRET=$(printf 'hook:%s' "$TELEGRAM_BOT_TOKEN" | sha256sum | cut -c1-48)
+          curl -s "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/setWebhook" \
+            -H 'content-type: application/json' \
+            -d "{\"url\":\"$URL/tg\",\"secret_token\":\"$SECRET\",\"allowed_updates\":[\"message\",\"edited_message\",\"my_chat_member\",\"poll_answer\"]}" \
+            | python3 -c "import json,sys;j=json.load(sys.stdin);print('webhook:',j.get('ok'),j.get('description',''));sys.exit(0 if j.get('ok') else 1)"
+      - name: Адрес для прогнозного бота
+        if: env.CF_OK == '1'
+        run: |
+          echo "{\"url\": \"$URL\"}" > data/worker.json
+          git config user.name "drift-bot"; git config user.email "drift-bot@users.noreply.github.com"
+          git add data/worker.json
+          git diff --cached --quiet || { git commit -qm "Адрес живого бота"; for i in 1 2 3 4; do git pull -q --rebase -X theirs && git push -q && break; sleep 3; done; }
