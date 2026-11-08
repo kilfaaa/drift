@@ -1,5 +1,5 @@
 /* Offline shell: network first, cache as fallback. Weather APIs are never cached here. */
-const CACHE = "medvedovka-v4";
+const CACHE = "medvedovka-v5";
 const SHELL = ["./", "index.html", "manifest.webmanifest", "photos/spot.jpg", "icons/icon-192.png", "crew/vault.json", "data/calibration.json"];
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(CACHE).then(c => Promise.all(SHELL.map(u => c.add(u).catch(() => null)))).then(() => self.skipWaiting()));

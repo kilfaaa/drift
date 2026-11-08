@@ -226,7 +226,7 @@ h2{letter-spacing:.02em}
 .spots button[aria-selected="true"] b.go::before,.spots button[aria-selected="true"] b.maybe::before{content:"";display:inline-block;width:7px;height:7px;margin-right:5px;vertical-align:1px;background:var(--go)}
 .spots button[aria-selected="true"] b.maybe::before{background:var(--maybe)}
 .alt{display:inline-block;margin-top:4px;background:none;border:0;padding:0;cursor:pointer;color:var(--go);font:inherit;font-weight:700;text-decoration:underline;text-underline-offset:3px}
-@media (max-width:420px){.spots button{padding:8px 10px;letter-spacing:.08em;font-size:11px}}
+@media (max-width:420px){.spots button{padding:8px 9px;letter-spacing:.05em;font-size:11px}}
 
 /* SOON */
 .soon{margin-top:22px;display:flex;flex-direction:column;gap:12px}
@@ -306,6 +306,7 @@ body.locked{padding-bottom:0}
         <button type="button" role="tab" data-spot="medvedovka" aria-selected="true">Medvedovka<b></b></button>
         <button type="button" role="tab" data-spot="krasnaya" aria-selected="false">KAPANY<b></b></button>
         <button type="button" role="tab" data-spot="mega" aria-selected="false">MEGA<b></b></button>
+        <button type="button" role="tab" data-spot="stk" aria-selected="false">STK<b></b></button>
       </div>
       <h1 class="spot-name" id="spot-h">Medvedovka</h1>
       <div class="timer" id="timer" role="timer" aria-live="off">
@@ -430,7 +431,8 @@ const dayDiff=(a,b)=>Math.round((new Date(b+"T00:00:00Z")-new Date(a+"T00:00:00Z
 const SPOTS=[
   {id:"medvedovka",title:"Medvedovka",ru:"Медведовка",lat:45.383020,lon:39.025310},
   {id:"krasnaya",title:"KAPANY",ru:"KAPANY",lat:45.102440,lon:38.991828},
-  {id:"mega",title:"MEGA",ru:"MEGA",lat:45.016290,lon:38.933109}];
+  {id:"mega",title:"MEGA",ru:"MEGA",lat:45.016290,lon:38.933109},
+  {id:"stk",title:"STK",ru:"STK",lat:45.219395,lon:39.637335}];
 let SPOT=SPOTS[0]; const DATA={};
 const omq=sp=>"latitude="+sp.lat+"&longitude="+sp.lon+"&timezone=Europe%2FMoscow&past_days=1&forecast_days=14";
 const mainUrl=sp=>"https://api.open-meteo.com/v1/forecast?"+omq(sp)+

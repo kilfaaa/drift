@@ -33,11 +33,13 @@ import engine as E  # noqa: E402
 STATE = ROOT / "bot" / "state.json"
 CAL = ROOT / "data" / "calibration.json"
 TRUTH = ROOT / "data" / "ground_truth.json"   # ответы «как было на споте» (только счётчики, без имён)
-SPOT_IDS = ["medvedovka", "krasnaya", "mega"]   # порядок = приоритет: основная, потом запасные
+SPOT_IDS = ["medvedovka", "krasnaya", "mega", "stk"]   # порядок = приоритет: основная, потом запасные
 LOG_PATH = {"medvedovka": ROOT / "data" / "forecast_log.csv", "krasnaya": ROOT / "data" / "forecast_log_krasnaya.csv",
-            "mega": ROOT / "data" / "forecast_log_mega.csv"}
+            "mega": ROOT / "data" / "forecast_log_mega.csv",
+            "stk": ROOT / "data" / "forecast_log_stk.csv"}
 VERIFY_PATH = {"medvedovka": ROOT / "data" / "verify.csv", "krasnaya": ROOT / "data" / "verify_krasnaya.csv",
-               "mega": ROOT / "data" / "verify_mega.csv"}
+               "mega": ROOT / "data" / "verify_mega.csv",
+               "stk": ROOT / "data" / "verify_stk.csv"}
 FC_PATH = {sp: ROOT / "data" / f"fc_{sp}.json" for sp in SPOT_IDS}   # готовый прогноз для сайта
 TRUTH_OPTS = ["Мокро", "Сухо", "Не ездили"]
 
@@ -245,7 +247,7 @@ def notify(tg: TG, st: dict, vault: Vault, evs: dict, slot: str):
     if not tg.token or not chat:
         return
     if not st.get("hello"):
-        tg.call("sendMessage", chat_id=chat, text="Я на месте. Буду писать сюда, когда на Медведовке после 20:00 будет мокро (или на запасных KAPANY и MEGA, если на Медведовке сухо), и присылать опросы «Еду / Не еду».\n" + SITE)
+        tg.call("sendMessage", chat_id=chat, text="Я на месте. Буду писать сюда, когда на Медведовке после 20:00 будет мокро (или на запасных KAPANY, MEGA и STK, если на Медведовке сухо), и присылать опросы «Еду / Не еду».\n" + SITE)
         st["hello"] = True
     today = E.now_msk().strftime("%Y-%m-%d")
     tomorrow = (E.now_msk() + timedelta(days=1)).strftime("%Y-%m-%d")
@@ -605,7 +607,7 @@ def main():
     save_state(st, vault)
     diag = {"updates": seen[-20:], "mode": a.mode, "slot": slot,
             "telegram": bool(tg.token), "vault": vault.ok, "chat": bool(st.get("chat_id")),
-            "evenings": len(ev), "evenings_krasnaya": len(ev_k), "evenings_mega": len(evs.get("mega") or []), "det": metas["medvedovka"].get("det", 0), "ens": metas["medvedovka"].get("ens", 0),
+            "evenings": len(ev), "evenings_krasnaya": len(ev_k), "evenings_mega": len(evs.get("mega") or []), "evenings_stk": len(evs.get("stk") or []), "det": metas["medvedovka"].get("det", 0), "ens": metas["medvedovka"].get("ens", 0),
             "errors": E.ERRORS[:30]}
     lr = ROOT / "data" / "last_run.json"
     old = load_json(lr, {}); old.pop("at", None)
