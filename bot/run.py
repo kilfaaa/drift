@@ -143,6 +143,9 @@ def save_state(st: dict, vault: "Vault"):
 
 
 # ---------- шаги ----------
+WORKER = {"status": "нет"}
+
+
 def worker_updates(tg: TG, offset: int):
     """Когда работает живой бот на Cloudflare, Telegram шлёт обновления ему (webhook), а он хранит голоса для нас.
     None — живого бота нет или он не ответил (тогда getUpdates)."""
@@ -155,9 +158,11 @@ def worker_updates(tg: TG, offset: int):
         req = urllib.request.Request(f"{url}/updates?offset={offset}", headers={"Authorization": f"Bearer {key}", **E.UA})
         with urllib.request.urlopen(req, timeout=40) as r:
             j = json.loads(r.read().decode())
+        WORKER["status"] = f"ok, {len(j.get('result') or [])} обновл." if j.get("ok") else "ответ без ok"
         return (j.get("result") or []) if j.get("ok") else []
     except Exception as e:
         print(f"worker updates failed: {e}")
+        WORKER["status"] = f"ошибка: {type(e).__name__} {str(e)[:80]}"
         return []   # webhook стоит, getUpdates всё равно не сработает
 
 
@@ -626,7 +631,7 @@ def main():
     seen = st.pop("_seen", [])
     save_state(st, vault)
     diag = {"updates": seen[-20:], "mode": a.mode, "slot": slot,
-            "telegram": bool(tg.token), "vault": vault.ok, "chat": bool(st.get("chat_id")),
+            "telegram": bool(tg.token), "vault": vault.ok, "worker": WORKER["status"], "chat": bool(st.get("chat_id")),
             "evenings": len(ev), "evenings_krasnaya": len(ev_k), "evenings_mega": len(evs.get("mega") or []), "evenings_stk": len(evs.get("stk") or []), "det": metas["medvedovka"].get("det", 0), "ens": metas["medvedovka"].get("ens", 0),
             "errors": E.ERRORS[:30]}
     lr = ROOT / "data" / "last_run.json"
