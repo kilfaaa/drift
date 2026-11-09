@@ -1,8 +1,8 @@
 {
- "at": "2026-11-09T13:12",
+ "at": "2026-11-09T23:59",
  "updates": [],
  "mode": "auto",
- "slot": "noon",
+ "slot": "collect",
  "telegram": true,
  "vault": true,
  "worker": "ok, 0 обновл.",
@@ -10,7 +10,7 @@
  "evenings": 14,
  "evenings_krasnaya": 14,
  "evenings_mega": 14,
- "evenings_stk": 14,
+ "evenings_stk": 15,
  "det": 8,
  "ens": 4,
  "errors": [
