@@ -135,12 +135,18 @@
    "pct": 99,
    "wet": false,
    "src": "spot"
+  },
+  {
+   "date": "2026-11-05",
+   "pct": 0,
+   "wet": false,
+   "src": "era5"
   }
  ],
  "verified": {
-  "n": 13,
-  "hits": 11,
-  "days": 13,
+  "n": 14,
+  "hits": 12,
+  "days": 14,
   "spot": 1
  },
  "spots": {
@@ -251,12 +257,18 @@
      "pct": 100,
      "wet": true,
      "src": "era5"
+    },
+    {
+     "date": "2026-11-05",
+     "pct": 0,
+     "wet": false,
+     "src": "era5"
     }
    ],
    "verified": {
-    "n": 7,
-    "hits": 6,
-    "days": 8,
+    "n": 8,
+    "hits": 7,
+    "days": 9,
     "spot": 0
    }
   },
