@@ -1,0 +1,38 @@
+name: Бот на дежурстве
+
+# Один запуск держится ~5,5 часа и каждые 30 минут делает шаг бота, а в конце запускает следующую смену.
+# Расписание ниже — только страховка, если цепочка оборвётся (GitHub запускает его редко и с опозданием).
+on:
+  schedule:
+    - cron: "23 */2 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: bot-loop
+  cancel-in-progress: false
+
+jobs:
+  shift:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    steps:
+      - uses: actions/checkout@v5
+        with: { fetch-depth: 0 }
+      - uses: actions/setup-python@v6
+        with: { python-version: "3.12" }
+      - run: pip install --quiet cryptography==43.0.3
+      - name: Дежурство
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          CREW_BOT_CODE: ${{ secrets.CREW_BOT_CODE }}
+          LOOP_MINUTES: "330"
+        run: bash tools/loop.sh
+      - name: Следующая смена
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run loop.yml --ref main
