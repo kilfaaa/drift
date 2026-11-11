@@ -1,5 +1,5 @@
 {
- "at": "2026-11-11T03:12",
+ "at": "2026-11-11T09:58",
  "updates": [],
  "mode": "auto",
  "slot": "collect",
@@ -15,6 +15,7 @@
  "ens": 4,
  "errors": [
   "api.open-meteo.com: URLError <urlopen error _ssl.c:994: The handshake operation timed out>",
-  "ensemble-api.open-meteo.com: URLError <urlopen error _ssl.c:994: The handshake operation timed out>"
+  "api.open-meteo.com: URLError <urlopen error _ssl.c:994: The handshake operation timed out>",
+  "api.open-meteo.com: URLError <urlopen error _ssl.c:994: The handshake operation timed out>"
  ]
 }
