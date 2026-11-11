@@ -1,8 +1,8 @@
 {
- "at": "2026-11-11T18:00",
+ "at": "2026-11-12T00:28",
  "updates": [],
  "mode": "auto",
- "slot": "evening",
+ "slot": "collect",
  "telegram": true,
  "vault": true,
  "worker": "ok, 0 обновл.",
