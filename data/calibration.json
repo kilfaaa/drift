@@ -147,31 +147,43 @@
    "pct": 57,
    "wet": true,
    "src": "era5"
+  },
+  {
+   "date": "2026-11-07",
+   "pct": 99,
+   "wet": true,
+   "src": "era5"
+  },
+  {
+   "date": "2026-11-12",
+   "pct": 97,
+   "wet": false,
+   "src": "spot"
   }
  ],
  "verified": {
-  "n": 14,
-  "hits": 12,
-  "days": 15,
-  "spot": 1
+  "n": 16,
+  "hits": 13,
+  "days": 17,
+  "spot": 2
  },
  "spots": {
   "krasnaya": {
    "weights": {
-    "Open-Meteo": 1.89,
-    "ECMWF": 1.89,
-    "ECMWF AIFS": 1.52,
-    "ICON": 1.86,
-    "ICON-EU": 1.86,
-    "GFS": 1.84,
-    "UKMO": 1.57,
-    "GEM": 1.63
+    "Open-Meteo": 1.86,
+    "ECMWF": 1.86,
+    "ECMWF AIFS": 1.54,
+    "ICON": 1.83,
+    "ICON-EU": 1.83,
+    "GFS": 1.86,
+    "UKMO": 1.54,
+    "GEM": 1.65
    },
    "models": {
     "Open-Meteo": {
      "n": 366,
-     "acc": 0.885,
-     "bs": 0.1148
+     "acc": 0.88,
+     "bs": 0.1202
     },
     "ECMWF": {
      "n": 366,
@@ -185,13 +197,13 @@
     },
     "ICON": {
      "n": 366,
-     "acc": 0.883,
-     "bs": 0.1175
+     "acc": 0.877,
+     "bs": 0.123
     },
     "ICON-EU": {
      "n": 366,
-     "acc": 0.883,
-     "bs": 0.1175
+     "acc": 0.877,
+     "bs": 0.123
     },
     "GFS": {
      "n": 366,
@@ -200,8 +212,8 @@
     },
     "UKMO": {
      "n": 366,
-     "acc": 0.852,
-     "bs": 0.1475
+     "acc": 0.847,
+     "bs": 0.153
     },
     "GEM": {
      "n": 366,
@@ -209,11 +221,11 @@
      "bs": 0.1421
     }
    },
-   "base_rate": 0.292,
-   "calibrated": "2026-11-05",
+   "base_rate": 0.301,
+   "calibrated": "2026-11-13",
    "period": [
-    "2025-10-29",
-    "2026-10-29"
+    "2025-11-06",
+    "2026-11-06"
    ],
    "journal": [
     {
@@ -275,12 +287,18 @@
      "pct": 93,
      "wet": true,
      "src": "era5"
+    },
+    {
+     "date": "2026-11-07",
+     "pct": 100,
+     "wet": true,
+     "src": "era5"
     }
    ],
    "verified": {
-    "n": 9,
-    "hits": 8,
-    "days": 10,
+    "n": 10,
+    "hits": 9,
+    "days": 11,
     "spot": 0
    }
   },
@@ -343,11 +361,18 @@
     "2025-10-31",
     "2026-10-31"
    ],
-   "journal": [],
+   "journal": [
+    {
+     "date": "2026-11-07",
+     "pct": 100,
+     "wet": true,
+     "src": "era5"
+    }
+   ],
    "verified": {
-    "n": 0,
-    "hits": 0,
-    "days": 0,
+    "n": 1,
+    "hits": 1,
+    "days": 1,
     "spot": 0
    }
   },
