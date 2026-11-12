@@ -214,19 +214,19 @@ h2{letter-spacing:.02em}
 @media (prefers-reduced-motion:reduce){.day .bars .b i{transform:none}}
 
 /* SPOT TABS */
-.spots{display:inline-flex;border:1px solid rgba(236,236,234,.35);background:rgba(11,12,14,.5);backdrop-filter:blur(6px);max-width:100%}
-.spots button{display:inline-flex;align-items:center;gap:8px;background:transparent;border:0;cursor:pointer;color:rgba(236,236,234,.75);padding:9px 14px;font:inherit;font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;white-space:nowrap}
-.spots button+button{border-left:1px solid rgba(236,236,234,.35)}
+.spots{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;width:min(640px,100%);margin:0 auto;border:1px solid rgba(236,236,234,.3);background:rgba(236,236,234,.3);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.spots button{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:6px;min-width:0;background:rgba(11,12,14,.62);border:0;cursor:pointer;color:var(--fg);padding:12px 14px;font:inherit;font-size:13px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;text-align:left;line-height:1.1;transition:background .2s}
+.spots button>span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.spots button:hover{background:rgba(30,32,36,.75)}
+.spots b{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;letter-spacing:.08em;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap;min-height:13px}
+.spots b::before{content:"";width:7px;height:7px;flex:none;background:rgba(236,236,234,.25)}
+.spots b:empty::before{display:none}
+.spots b.go{color:var(--go)} .spots b.go::before{background:var(--go)}
+.spots b.maybe{color:var(--maybe)} .spots b.maybe::before{background:var(--maybe)}
 .spots button[aria-selected="true"]{background:var(--fg);color:var(--bg)}
-.spots b{font-variant-numeric:tabular-nums;color:var(--muted);font-weight:800}
-.spots button{flex-direction:column;gap:3px;line-height:1.1}
-.spots b{font-size:11px;letter-spacing:.08em}
-.spots b.go{color:var(--go)} .spots b.maybe{color:var(--maybe)}
 .spots button[aria-selected="true"] b{color:var(--bg)}
-.spots button[aria-selected="true"] b.go::before,.spots button[aria-selected="true"] b.maybe::before{content:"";display:inline-block;width:7px;height:7px;margin-right:5px;vertical-align:1px;background:var(--go)}
-.spots button[aria-selected="true"] b.maybe::before{background:var(--maybe)}
-.alt{display:inline-block;margin-top:4px;background:none;border:0;padding:0;cursor:pointer;color:var(--go);font:inherit;font-weight:700;text-decoration:underline;text-underline-offset:3px}
-@media (max-width:420px){.spots button{padding:8px 9px;letter-spacing:.05em;font-size:11px}}
+.spots button[aria-selected="true"] b:not(.go):not(.maybe)::before{background:rgba(11,12,14,.35)}
+@media (max-width:560px){.spots{grid-template-columns:repeat(2,minmax(0,1fr))}.spots button{padding:11px 12px}}
 
 /* SOON */
 .soon{margin-top:22px;display:flex;flex-direction:column;gap:12px}
@@ -303,10 +303,10 @@ body.locked{padding-bottom:0}
     </div>
     <div class="hero-center">
       <div class="spots" id="spots" role="tablist" aria-label="Точка">
-        <button type="button" role="tab" data-spot="medvedovka" aria-selected="true">Medvedovka<b></b></button>
-        <button type="button" role="tab" data-spot="krasnaya" aria-selected="false">KAPANY<b></b></button>
-        <button type="button" role="tab" data-spot="mega" aria-selected="false">MEGA<b></b></button>
-        <button type="button" role="tab" data-spot="stk" aria-selected="false">STK<b></b></button>
+        <button type="button" role="tab" data-spot="medvedovka" aria-selected="true"><span>Medvedovka</span><b></b></button>
+        <button type="button" role="tab" data-spot="krasnaya" aria-selected="false"><span>KAPANY</span><b></b></button>
+        <button type="button" role="tab" data-spot="mega" aria-selected="false"><span>MEGA</span><b></b></button>
+        <button type="button" role="tab" data-spot="stk" aria-selected="false"><span>STK</span><b></b></button>
       </div>
       <h1 class="spot-name" id="spot-h">Medvedovka</h1>
       <div class="timer" id="timer" role="timer" aria-live="off">
