@@ -1,15 +1,11 @@
 {
- "at": "2026-11-13T02:07",
- "updates": [
-  "poll_answer:-:",
-  "poll_answer:-:",
-  "poll_answer:-:"
- ],
+ "at": "2026-11-13T02:37",
+ "updates": [],
  "mode": "auto",
  "slot": "collect",
  "telegram": true,
  "vault": true,
- "worker": "ok, 3 обновл.",
+ "worker": "ok, 0 обновл.",
  "chat": true,
  "evenings": 14,
  "evenings_krasnaya": 14,
@@ -17,5 +13,9 @@
  "evenings_stk": 14,
  "det": 8,
  "ens": 4,
- "errors": []
+ "errors": [
+  "api.open-meteo.com: URLError <urlopen error _ssl.c:994: The handshake operation timed out>",
+  "api.open-meteo.com: URLError <urlopen error _ssl.c:994: The handshake operation timed out>",
+  "api.open-meteo.com: URLError <urlopen error _ssl.c:994: The handshake operation timed out>"
+ ]
 }
