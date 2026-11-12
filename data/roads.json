@@ -1,0 +1,466 @@
+{
+ "medvedovka": [
+  {
+   "dist_m": 11,
+   "highway": "service"
+  },
+  {
+   "dist_m": 26,
+   "highway": "service",
+   "oneway": "yes"
+  },
+  {
+   "dist_m": 32,
+   "highway": "service",
+   "oneway": "yes"
+  },
+  {
+   "dist_m": 46,
+   "highway": "service",
+   "oneway": "yes"
+  },
+  {
+   "dist_m": 65,
+   "highway": "service"
+  },
+  {
+   "dist_m": 75,
+   "highway": "service",
+   "oneway": "yes"
+  },
+  {
+   "dist_m": 82,
+   "highway": "service",
+   "oneway": "yes"
+  },
+  {
+   "dist_m": 94,
+   "highway": "service",
+   "oneway": "yes"
+  },
+  {
+   "dist_m": 3608,
+   "highway": "primary",
+   "lanes": "2",
+   "maxspeed": "RU:rural",
+   "oneway": "yes",
+   "ref": "03К-001",
+   "surface": "asphalt"
+  },
+  {
+   "dist_m": 3609,
+   "highway": "primary",
+   "lanes": "2",
+   "maxspeed": "RU:rural",
+   "oneway": "yes",
+   "ref": "03К-001",
+   "surface": "asphalt"
+  }
+ ],
+ "krasnaya": [
+  {
+   "dist_m": 56,
+   "highway": "service",
+   "service": "driveway"
+  },
+  {
+   "dist_m": 69,
+   "highway": "primary",
+   "lanes": "3",
+   "lit": "yes",
+   "maxspeed": "RU:urban",
+   "oneway": "yes",
+   "ref": "А-136",
+   "surface": "asphalt"
+  },
+  {
+   "dist_m": 70,
+   "amenity": "parking"
+  },
+  {
+   "dist_m": 84,
+   "highway": "primary",
+   "lanes": "3",
+   "lit": "yes",
+   "maxspeed": "RU:urban",
+   "oneway": "yes",
+   "ref": "А-136",
+   "surface": "asphalt"
+  },
+  {
+   "dist_m": 89,
+   "highway": "primary_link",
+   "lanes": "2",
+   "maxspeed": "RU:urban",
+   "ref": "А-136",
+   "surface": "asphalt"
+  },
+  {
+   "dist_m": 100,
+   "highway": "unclassified"
+  },
+  {
+   "dist_m": 102,
+   "highway": "primary_link",
+   "lanes": "2",
+   "oneway": "no",
+   "ref": "А-136",
+   "surface": "asphalt"
+  },
+  {
+   "dist_m": 104,
+   "highway": "primary",
+   "lanes": "3",
+   "lit": "yes",
+   "maxspeed": "RU:urban",
+   "oneway": "yes",
+   "ref": "А-136",
+   "surface": "asphalt"
+  },
+  {
+   "dist_m": 104,
+   "highway": "service",
+   "service": "driveway"
+  },
+  {
+   "dist_m": 113,
+   "highway": "primary",
+   "lanes": "3",
+   "lit": "yes",
+   "maxspeed": "RU:urban",
+   "oneway": "yes",
+   "ref": "А-136",
+   "surface": "asphalt"
+  },
+  {
+   "dist_m": 113,
+   "highway": "primary",
+   "lanes": "3",
+   "lit": "yes",
+   "maxspeed": "RU:urban",
+   "name": "Ростовское шоссе",
+   "oneway": "yes",
+   "ref": "А-136",
+   "surface": "asphalt"
+  },
+  {
+   "dist_m": 131,
+   "highway": "service"
+  },
+  {
+   "dist_m": 151,
+   "highway": "primary_link",
+   "lanes": "1",
+   "maxspeed": "60",
+   "oneway": "yes",
+   "ref": "А-136",
+   "surface": "asphalt"
+  },
+  {
+   "dist_m": 152,
+   "highway": "primary",
+   "lanes": "2",
+   "lit": "yes",
+   "maxspeed": "RU:urban",
+   "name": "Ростовское шоссе",
+   "oneway": "yes",
+   "ref": "А-136",
+   "surface": "asphalt"
+  },
+  {
+   "dist_m": 154,
+   "highway": "primary",
+   "lanes": "3",
+   "lit": "yes",
+   "maxspeed": "RU:urban",
+   "name": "Ростовское шоссе",
+   "oneway": "yes",
+   "ref": "А-136",
+   "surface": "asphalt"
+  },
+  {
+   "dist_m": 158,
+   "highway": "primary_link",
+   "lanes": "1",
+   "maxspeed": "RU:urban",
+   "oneway": "yes",
+   "ref": "А-136",
+   "surface": "asphalt"
+  },
+  {
+   "dist_m": 171,
+   "highway": "primary",
+   "lanes": "3",
+   "lit": "yes",
+   "maxspeed": "RU:urban",
+   "oneway": "yes",
+   "ref": "А-136",
+   "surface": "asphalt"
+  },
+  {
+   "dist_m": 174,
+   "highway": "service"
+  },
+  {
+   "dist_m": 182,
+   "highway": "primary",
+   "lanes": "3",
+   "lit": "yes",
+   "maxspeed": "RU:urban",
+   "oneway": "yes",
+   "ref": "А-136",
+   "surface": "asphalt"
+  },
+  {
+   "dist_m": 184,
+   "highway": "residential",
+   "name": "Спасская улица"
+  },
+  {
+   "dist_m": 188,
+   "highway": "primary",
+   "lanes": "1",
+   "lit": "yes",
+   "maxspeed": "RU:urban",
+   "oneway": "yes",
+   "ref": "А-136",
+   "surface": "asphalt"
+  },
+  {
+   "dist_m": 211,
+   "highway": "primary",
+   "lanes": "2",
+   "lit": "yes",
+   "maxspeed": "RU:urban",
+   "name": "Ростовское шоссе Север",
+   "oneway": "yes",
+   "ref": "А-136",
+   "surface": "asphalt"
+  },
+  {
+   "dist_m": 211,
+   "highway": "primary",
+   "lanes": "3",
+   "maxspeed": "60",
+   "oneway": "yes",
+   "ref": "А-136",
+   "surface": "asphalt"
+  },
+  {
+   "dist_m": 296,
+   "highway": "primary",
+   "lanes": "3",
+   "maxspeed": "60",
+   "name": "Ростовское шоссе",
+   "oneway": "yes",
+   "ref": "А-136",
+   "surface": "asphalt"
+  },
+  {
+   "dist_m": 405,
+   "highway": "primary",
+   "lanes": "2",
+   "maxspeed": "RU:urban",
+   "oneway": "yes",
+   "ref": "А-136",
+   "surface": "asphalt"
+  }
+ ],
+ "mega": [
+  {
+   "dist_m": 20,
+   "highway": "service",
+   "lanes": "1",
+   "oneway": "yes"
+  },
+  {
+   "dist_m": 24,
+   "highway": "unclassified",
+   "lanes": "1",
+   "oneway": "yes",
+   "surface": "asphalt"
+  },
+  {
+   "dist_m": 30,
+   "highway": "service",
+   "lanes": "1",
+   "oneway": "yes"
+  },
+  {
+   "dist_m": 46,
+   "highway": "unclassified",
+   "lanes": "1",
+   "oneway": "yes"
+  },
+  {
+   "dist_m": 55,
+   "highway": "unclassified",
+   "lanes": "1",
+   "oneway": "yes",
+   "surface": "asphalt"
+  },
+  {
+   "dist_m": 68,
+   "highway": "unclassified",
+   "lanes": "2",
+   "oneway": "yes",
+   "surface": "asphalt"
+  },
+  {
+   "dist_m": 68,
+   "highway": "service",
+   "surface": "paved"
+  },
+  {
+   "dist_m": 71,
+   "highway": "service"
+  },
+  {
+   "dist_m": 86,
+   "highway": "unclassified",
+   "lanes": "2",
+   "surface": "asphalt"
+  },
+  {
+   "dist_m": 86,
+   "highway": "unclassified",
+   "lanes": "2",
+   "oneway": "yes"
+  },
+  {
+   "dist_m": 97,
+   "highway": "service",
+   "lanes": "1",
+   "oneway": "yes",
+   "surface": "paved"
+  },
+  {
+   "dist_m": 98,
+   "highway": "unclassified",
+   "oneway": "yes",
+   "surface": "asphalt"
+  },
+  {
+   "dist_m": 109,
+   "highway": "service",
+   "oneway": "yes"
+  },
+  {
+   "dist_m": 110,
+   "highway": "service",
+   "lanes": "1",
+   "oneway": "yes"
+  },
+  {
+   "dist_m": 120,
+   "highway": "service"
+  },
+  {
+   "dist_m": 122,
+   "highway": "unclassified",
+   "lanes": "2",
+   "oneway": "yes"
+  },
+  {
+   "dist_m": 123,
+   "highway": "service",
+   "oneway": "yes"
+  },
+  {
+   "dist_m": 127,
+   "highway": "service",
+   "surface": "paved"
+  },
+  {
+   "dist_m": 127,
+   "highway": "service"
+  },
+  {
+   "dist_m": 129,
+   "highway": "service"
+  },
+  {
+   "dist_m": 132,
+   "highway": "service",
+   "lanes": "2",
+   "surface": "paved"
+  },
+  {
+   "dist_m": 139,
+   "highway": "service"
+  },
+  {
+   "dist_m": 151,
+   "highway": "unclassified",
+   "lanes": "1",
+   "oneway": "yes",
+   "surface": "asphalt"
+  },
+  {
+   "dist_m": 154,
+   "highway": "service",
+   "lanes": "2",
+   "maxspeed": "20",
+   "surface": "paved"
+  },
+  {
+   "dist_m": 165,
+   "highway": "service",
+   "maxspeed": "20",
+   "surface": "paved"
+  },
+  {
+   "dist_m": 167,
+   "highway": "unclassified",
+   "lanes": "2",
+   "surface": "asphalt"
+  },
+  {
+   "dist_m": 185,
+   "amenity": "parking"
+  },
+  {
+   "dist_m": 223,
+   "highway": "service",
+   "maxspeed": "20",
+   "surface": "paved"
+  },
+  {
+   "dist_m": 272,
+   "highway": "service",
+   "maxspeed": "20",
+   "oneway": "yes",
+   "surface": "paved"
+  },
+  {
+   "dist_m": 272,
+   "highway": "service",
+   "maxspeed": "20",
+   "oneway": "yes",
+   "surface": "paved"
+  },
+  {
+   "dist_m": 283,
+   "highway": "service",
+   "maxspeed": "20",
+   "oneway": "yes"
+  },
+  {
+   "dist_m": 284,
+   "highway": "service",
+   "maxspeed": "20"
+  }
+ ],
+ "stk": [
+  {
+   "dist_m": 37,
+   "highway": "raceway",
+   "maxspeed": "150",
+   "surface": "asphalt"
+  },
+  {
+   "dist_m": 218,
+   "highway": "service"
+  }
+ ]
+}
