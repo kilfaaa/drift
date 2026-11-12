@@ -471,13 +471,17 @@ const wOf=name=>{ const w=ACAL&&ACAL.weights&&ACAL.weights[name]; return w==null
 const ENS_SHARE=()=>ACAL&&ACAL.ens_share!=null?+ACAL.ens_share:0.65;
 const SNOW_T=0.5, ICE_T=0, RAIN_HOUR=0.05;
 const blend=(pe,pd)=>pe!=null&&pd!=null?ENS_SHARE()*pe+(1-ENS_SHARE())*pd:(pe??pd);
+const TRAFFIC={mega:{day:0.03,night:0.005}};
 function analyze(b,sp){
   ACAL=spotCal((sp||SPOT).id);
   const mh=b&&b.main&&b.main.hourly; if(!mh||!mh.time) return null;
   const t=mh.time, n=t.length;
   const pick=k=>mh[k]||mh[k+"_best_match"]||null;
   const P=(pick("precipitation")||[]).map(v=>v==null?null:+v);
-  const E=(pick("et0_fao_evapotranspiration")||[]).map(v=>v==null?0.05:+v);
+  let E=(pick("et0_fao_evapotranspiration")||[]).map(v=>v==null?0.05:+v);
+  // машины сушат асфальт (как TRAFFIC в bot/engine.py): заметный поток только на парковке MEGA, днём
+  const TR=sp&&TRAFFIC[sp.id];
+  if(TR) E=E.map((e,i)=>{ const hh=+String(t[i]).slice(11,13); return e+(hh>=9&&hh<=21?TR.day:TR.night); });
   const temp=pick("temperature_2m"), wind=pick("wind_speed_10m"), soil=pick("soil_temperature_0cm"), snowf=pick("snowfall");
   const det=[{name:"Open-Meteo",P,w:wetSeries(P,E)}];
   for(const [name,s] of (b.det||[])) if(s[0]) det.push({name,P:s[0],w:wetSeries(s[0],E)});

@@ -133,7 +133,21 @@ def fetch_bundle(spot: str = "medvedovka"):
         a = align(j, times)
         if a:
             ens.append((name, a))
-    return {"main": main, "det": det, "ens": ens}
+    return {"main": main, "det": det, "ens": ens, "spot": spot}
+
+
+# Трафик сушит асфальт: колёса выдавливают воду из колеи, брызги и поток воздуха ускоряют испарение.
+# Дополнительная сушка, мм/ч, сверх погодного испарения (ET0). По данным OpenStreetMap (data/roads.json):
+# Медведовка — внутренние проезды без сквозного движения, KAPANY — проезд у парковки (трасса рядом, но не по точке),
+# STK — гоночная трасса; заметный поток только у MEGA (парковка ТЦ: днём покупатели, после ~22:00 пусто).
+TRAFFIC = {"mega": {"day": 0.03, "night": 0.005}}   # day = 9:00–21:59
+
+
+def traffic_dry(spot, hour):
+    t = TRAFFIC.get(spot)
+    if not t:
+        return 0.0
+    return t["day"] if 9 <= hour <= 21 else t["night"]
 
 
 SNOW_T = 0.5     # при такой и ниже температуре воздуха осадки считаем снегом
@@ -154,6 +168,9 @@ def analyze(b, cal=None, now=None):
     num = lambda arr, i: (None if (arr is None or i < 0 or i >= len(arr) or arr[i] is None) else float(arr[i]))
     P = [None if v is None else float(v) for v in (pick("precipitation") or [None] * n)]
     E = [0.05 if v is None else float(v) for v in (pick("et0_fao_evapotranspiration") or [0.05] * n)]
+    spot = b.get("spot")
+    if spot in TRAFFIC:   # машины сушат асфальт
+        E = [e + traffic_dry(spot, int(t[i][11:13])) for i, e in enumerate(E)]
     temp, wind = pick("temperature_2m"), pick("wind_speed_10m")
     soil, snowf = pick("soil_temperature_0cm"), pick("snowfall")
     det = [{"name": "Open-Meteo", "P": P, "w": wet_series(P, E)}] + \
