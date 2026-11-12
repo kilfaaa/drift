@@ -153,13 +153,19 @@
    "pct": 99,
    "wet": true,
    "src": "era5"
+  },
+  {
+   "date": "2026-11-12",
+   "pct": 97,
+   "wet": true,
+   "src": "spot"
   }
  ],
  "verified": {
-  "n": 15,
-  "hits": 13,
-  "days": 16,
-  "spot": 1
+  "n": 16,
+  "hits": 14,
+  "days": 17,
+  "spot": 2
  },
  "spots": {
   "krasnaya": {
