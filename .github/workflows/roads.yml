@@ -1,0 +1,15 @@
+name: Дороги у точек (OSM)
+on: workflow_dispatch
+permissions: { contents: write }
+jobs:
+  roads:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with: { python-version: "3.12" }
+      - run: python tools/roads.py
+      - run: |
+          git config user.name "medvedovka-bot"; git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/roads.json; git diff --cached --quiet || git commit -qm "Дороги у точек (OSM)"
+          for i in 1 2 3 4; do git pull -q --rebase -X theirs && git push -q && break; sleep 5; done
