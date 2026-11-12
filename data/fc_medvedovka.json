@@ -1,5 +1,5 @@
 {
- "generated": "2026-11-12T11:37+03:00",
+ "generated": "2026-11-12T12:37+03:00",
  "spot": "medvedovka",
  "evenings": [
   {
@@ -55,7 +55,7 @@
    "water": 4.941,
    "rain_in": 4.171,
    "t_min": 10.3,
-   "s_min": 11.0,
+   "s_min": 11.2,
    "w_max": 4.39,
    "status": "go",
    "snow": false,
@@ -75,7 +75,7 @@
    "water": 0.001,
    "rain_in": 0.001,
    "t_min": 3.0,
-   "s_min": 2.7,
+   "s_min": 2.8,
    "w_max": 2.62,
    "status": "dry",
    "snow": false,
@@ -95,7 +95,7 @@
    "water": 0.006,
    "rain_in": 0.006,
    "t_min": 3.4,
-   "s_min": 2.9,
+   "s_min": 1.5,
    "w_max": 4.24,
    "status": "dry",
    "snow": false,
