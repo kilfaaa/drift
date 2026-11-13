@@ -153,12 +153,18 @@
    "pct": 99,
    "wet": true,
    "src": "era5"
+  },
+  {
+   "date": "2026-11-08",
+   "pct": 0,
+   "wet": false,
+   "src": "era5"
   }
  ],
  "verified": {
-  "n": 15,
-  "hits": 13,
-  "days": 16,
+  "n": 16,
+  "hits": 14,
+  "days": 17,
   "spot": 1
  },
  "spots": {
@@ -287,12 +293,18 @@
      "pct": 100,
      "wet": true,
      "src": "era5"
+    },
+    {
+     "date": "2026-11-08",
+     "pct": 0,
+     "wet": false,
+     "src": "era5"
     }
    ],
    "verified": {
-    "n": 10,
-    "hits": 9,
-    "days": 11,
+    "n": 11,
+    "hits": 10,
+    "days": 12,
     "spot": 0
    }
   },
@@ -361,12 +373,18 @@
      "pct": 100,
      "wet": true,
      "src": "era5"
+    },
+    {
+     "date": "2026-11-08",
+     "pct": 0,
+     "wet": false,
+     "src": "era5"
     }
    ],
    "verified": {
-    "n": 1,
-    "hits": 1,
-    "days": 1,
+    "n": 2,
+    "hits": 2,
+    "days": 2,
     "spot": 0
    }
   },
@@ -429,11 +447,18 @@
     "2025-11-01",
     "2026-11-01"
    ],
-   "journal": [],
+   "journal": [
+    {
+     "date": "2026-11-08",
+     "pct": 25,
+     "wet": false,
+     "src": "era5"
+    }
+   ],
    "verified": {
-    "n": 0,
-    "hits": 0,
-    "days": 0,
+    "n": 1,
+    "hits": 1,
+    "days": 1,
     "spot": 0
    }
   }
