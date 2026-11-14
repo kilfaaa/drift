@@ -47,9 +47,14 @@
    "date": "2026-11-12",
    "kind": "truth",
    "spot": "medvedovka"
+  },
+  "5458685184452858613": {
+   "date": "2026-11-14",
+   "kind": "weather",
+   "spot": "medvedovka"
   }
  },
- "joke_n": 7,
+ "joke_n": 8,
  "joke_rot": 59,
  "joke_win": "2026-11-14-0",
  "fc_at": "2026-11-14T10:37+03:00",
