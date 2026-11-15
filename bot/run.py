@@ -222,8 +222,13 @@ def collect_updates(tg: TG, st: dict, vault: Vault):
         vault.save_stats()
 
 
+JOKES_IN_MESSAGES = False   # True — снова прикреплять анекдот к прогнозам и опросам
+
+
 def with_joke(st: dict, vault: "Vault", text: str) -> str:
-    """Добавить анекдот: по очереди про каждого из экипажа, без повторов, пока не кончатся."""
+    """Анекдоты к сообщениям бота отключены: сообщения уходят без них."""
+    if not JOKES_IN_MESSAGES:
+        return text
     jokes = (vault.data.get("jokes") or {}) if vault.ok else {}
     people = sorted(k for k, v in jokes.items() if v)
     if not people:
@@ -619,11 +624,7 @@ def main():
             notify(tg, st, vault, evs, slot)
     if a.mode == "auto":
         ask_truth(tg, st)
-    # анекдот раз в 4 часа днём: окна 10–14, 14–18, 18–22, 22–24
-    if a.mode == "auto" and 10 <= h <= 23:
-        win = f"{today}-{(h - 10) // 4}"
-        if st.get("joke_win") != win and send_beat():
-            st["joke_win"] = win
+    # регулярные анекдоты отключены по просьбе чата; остались только по запросу (--mode joke) и у живого бота
     truth = aggregate_truth(st)
     for sp in SPOT_IDS:
         verify(spot_cal(cal, sp), sp, truth)
