@@ -2,7 +2,7 @@
   <img src="docs/banner.jpg" alt="MEDVEDOVKA" width="100%">
 </p>
 
-<h1 align="center">coffeeGaysClub · Medvedovka</h1>
+<h1 align="center">wetdrift · Medvedovka</h1>
 
 <p align="center">
   Прогноз мокрого асфальта на выбранной точке в заданное время и объявления сборов.
