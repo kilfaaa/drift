@@ -177,12 +177,18 @@
    "pct": 52,
    "wet": false,
    "src": "era5"
+  },
+  {
+   "date": "2026-11-12",
+   "pct": 97,
+   "wet": true,
+   "src": "era5"
   }
  ],
  "verified": {
-  "n": 18,
-  "hits": 16,
-  "days": 20,
+  "n": 19,
+  "hits": 17,
+  "days": 21,
   "spot": 1
  },
  "spots": {
@@ -335,12 +341,18 @@
      "pct": 34,
      "wet": false,
      "src": "era5"
+    },
+    {
+     "date": "2026-11-12",
+     "pct": 74,
+     "wet": true,
+     "src": "era5"
     }
    ],
    "verified": {
-    "n": 13,
-    "hits": 12,
-    "days": 15,
+    "n": 14,
+    "hits": 13,
+    "days": 16,
     "spot": 0
    }
   },
@@ -433,12 +445,18 @@
      "pct": 30,
      "wet": true,
      "src": "era5"
+    },
+    {
+     "date": "2026-11-12",
+     "pct": 71,
+     "wet": true,
+     "src": "era5"
     }
    ],
    "verified": {
-    "n": 4,
-    "hits": 4,
-    "days": 5,
+    "n": 5,
+    "hits": 5,
+    "days": 6,
     "spot": 0
    }
   },
@@ -525,12 +543,18 @@
      "pct": 15,
      "wet": false,
      "src": "era5"
+    },
+    {
+     "date": "2026-11-12",
+     "pct": 84,
+     "wet": true,
+     "src": "era5"
     }
    ],
    "verified": {
-    "n": 4,
-    "hits": 4,
-    "days": 4,
+    "n": 5,
+    "hits": 5,
+    "days": 5,
     "spot": 0
    }
   }
