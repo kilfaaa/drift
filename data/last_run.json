@@ -1,10 +1,10 @@
 {
- "at": "2026-11-19T10:37",
+ "at": "2026-11-19T11:07",
  "updates": [
   "poll_answer:-:"
  ],
  "mode": "auto",
- "slot": "collect",
+ "slot": "noon",
  "telegram": true,
  "vault": true,
  "worker": "ok, 1 обновл.",
