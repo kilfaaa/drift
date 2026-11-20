@@ -1,5 +1,5 @@
 {
- "at": "2026-11-21T00:07",
+ "at": "2026-11-21T00:37",
  "updates": [
   "poll_answer:-:"
  ],
@@ -15,5 +15,18 @@
  "evenings_stk": 13,
  "det": 8,
  "ens": 4,
- "errors": []
+ "errors": [
+  "api.open-meteo.com: HTTP 429 {\"reason\":\"Daily API request limit exceeded. Please try again tomorrow.\",\"error\":true}",
+  "api.open-meteo.com: HTTP 429 {\"reason\":\"Daily API request limit exceeded. Please try again tomorrow.\",\"error\":true}",
+  "api.open-meteo.com: HTTP 429 {\"reason\":\"Daily API request limit exceeded. Please try again tomorrow.\",\"error\":true}",
+  "api.open-meteo.com: HTTP 429 {\"error\":true,\"reason\":\"Daily API request limit exceeded. Please try again tomorrow.\"}",
+  "api.open-meteo.com: HTTP 429 {\"error\":true,\"reason\":\"Daily API request limit exceeded. Please try again tomorrow.\"}",
+  "api.open-meteo.com: HTTP 429 {\"reason\":\"Daily API request limit exceeded. Please try again tomorrow.\",\"error\":true}",
+  "api.open-meteo.com: HTTP 429 {\"error\":true,\"reason\":\"Daily API request limit exceeded. Please try again tomorrow.\"}",
+  "api.open-meteo.com: HTTP 429 {\"reason\":\"Daily API request limit exceeded. Please try again tomorrow.\",\"error\":true}",
+  "api.open-meteo.com: HTTP 429 {\"error\":true,\"reason\":\"Daily API request limit exceeded. Please try again tomorrow.\"}",
+  "api.open-meteo.com: HTTP 429 {\"error\":true,\"reason\":\"Daily API request limit exceeded. Please try again tomorrow.\"}",
+  "api.open-meteo.com: HTTP 429 {\"error\":true,\"reason\":\"Daily API request limit exceeded. Please try again tomorrow.\"}",
+  "api.open-meteo.com: HTTP 429 {\"error\":true,\"reason\":\"Daily API request limit exceeded. Please try again tomorrow.\"}"
+ ]
 }
