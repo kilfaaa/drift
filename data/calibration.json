@@ -195,73 +195,79 @@
    "pct": 100,
    "wet": true,
    "src": "era5"
+  },
+  {
+   "date": "2026-11-15",
+   "pct": 3,
+   "wet": false,
+   "src": "era5"
   }
  ],
  "verified": {
-  "n": 21,
-  "hits": 19,
-  "days": 23,
+  "n": 22,
+  "hits": 20,
+  "days": 24,
   "spot": 1
  },
  "spots": {
   "krasnaya": {
    "weights": {
-    "Open-Meteo": 1.86,
-    "ECMWF": 1.86,
-    "ECMWF AIFS": 1.54,
-    "ICON": 1.83,
-    "ICON-EU": 1.83,
-    "GFS": 1.86,
-    "UKMO": 1.54,
-    "GEM": 1.65
+    "Open-Meteo": 1.84,
+    "ECMWF": 1.84,
+    "ECMWF AIFS": 1.53,
+    "ICON": 1.81,
+    "ICON-EU": 1.81,
+    "GFS": 1.84,
+    "UKMO": 1.6,
+    "GEM": 1.6
    },
    "models": {
     "Open-Meteo": {
      "n": 366,
-     "acc": 0.88,
-     "bs": 0.1202
+     "acc": 0.877,
+     "bs": 0.123
     },
     "ECMWF": {
      "n": 366,
-     "acc": 0.926,
-     "bs": 0.0738
+     "acc": 0.923,
+     "bs": 0.0765
     },
     "ECMWF AIFS": {
      "n": 366,
-     "acc": 0.847,
-     "bs": 0.153
+     "acc": 0.844,
+     "bs": 0.1557
     },
     "ICON": {
      "n": 366,
-     "acc": 0.877,
-     "bs": 0.123
+     "acc": 0.874,
+     "bs": 0.1257
     },
     "ICON-EU": {
      "n": 366,
-     "acc": 0.877,
-     "bs": 0.123
+     "acc": 0.874,
+     "bs": 0.1257
     },
     "GFS": {
      "n": 366,
-     "acc": 0.88,
-     "bs": 0.1202
+     "acc": 0.877,
+     "bs": 0.123
     },
     "UKMO": {
      "n": 366,
-     "acc": 0.847,
-     "bs": 0.153
+     "acc": 0.852,
+     "bs": 0.1475
     },
     "GEM": {
      "n": 366,
-     "acc": 0.858,
-     "bs": 0.1421
+     "acc": 0.852,
+     "bs": 0.1475
     }
    },
-   "base_rate": 0.301,
-   "calibrated": "2026-11-13",
+   "base_rate": 0.303,
+   "calibrated": "2026-11-21",
    "period": [
-    "2025-11-06",
-    "2026-11-06"
+    "2025-11-14",
+    "2026-11-14"
    ],
    "journal": [
     {
@@ -371,12 +377,18 @@
      "pct": 100,
      "wet": true,
      "src": "era5"
+    },
+    {
+     "date": "2026-11-15",
+     "pct": 1,
+     "wet": false,
+     "src": "era5"
     }
    ],
    "verified": {
-    "n": 16,
-    "hits": 15,
-    "days": 18,
+    "n": 17,
+    "hits": 16,
+    "days": 19,
     "spot": 0
    }
   },
@@ -487,12 +499,18 @@
      "pct": 100,
      "wet": true,
      "src": "era5"
+    },
+    {
+     "date": "2026-11-15",
+     "pct": 0,
+     "wet": false,
+     "src": "era5"
     }
    ],
    "verified": {
-    "n": 7,
-    "hits": 7,
-    "days": 8,
+    "n": 8,
+    "hits": 8,
+    "days": 9,
     "spot": 0
    }
   },
@@ -597,12 +615,18 @@
      "pct": 99,
      "wet": true,
      "src": "era5"
+    },
+    {
+     "date": "2026-11-15",
+     "pct": 0,
+     "wet": false,
+     "src": "era5"
     }
    ],
    "verified": {
-    "n": 6,
-    "hits": 6,
-    "days": 7,
+    "n": 7,
+    "hits": 7,
+    "days": 8,
     "spot": 0
    }
   }
