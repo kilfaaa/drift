@@ -1,5 +1,5 @@
 {
- "at": "2026-11-21T03:37",
+ "at": "2026-11-21T04:07",
  "updates": [],
  "mode": "auto",
  "slot": "collect",
@@ -13,18 +13,5 @@
  "evenings_stk": 13,
  "det": 8,
  "ens": 4,
- "errors": [
-  "api.open-meteo.com: HTTP 429 {\"reason\":\"Hourly API request limit exceeded. Please try again in the next hour.\",\"error\":true}",
-  "api.open-meteo.com: HTTP 429 {\"error\":true,\"reason\":\"Hourly API request limit exceeded. Please try again in the next hour.\"}",
-  "api.open-meteo.com: HTTP 429 {\"error\":true,\"reason\":\"Hourly API request limit exceeded. Please try again in the next hour.\"}",
-  "api.open-meteo.com: HTTP 429 {\"error\":true,\"reason\":\"Hourly API request limit exceeded. Please try again in the next hour.\"}",
-  "api.open-meteo.com: HTTP 429 {\"reason\":\"Hourly API request limit exceeded. Please try again in the next hour.\",\"error\":true}",
-  "api.open-meteo.com: HTTP 429 {\"reason\":\"Hourly API request limit exceeded. Please try again in the next hour.\",\"error\":true}",
-  "api.open-meteo.com: HTTP 429 {\"error\":true,\"reason\":\"Hourly API request limit exceeded. Please try again in the next hour.\"}",
-  "api.open-meteo.com: HTTP 429 {\"error\":true,\"reason\":\"Hourly API request limit exceeded. Please try again in the next hour.\"}",
-  "api.open-meteo.com: HTTP 429 {\"reason\":\"Hourly API request limit exceeded. Please try again in the next hour.\",\"error\":true}",
-  "api.open-meteo.com: HTTP 429 {\"reason\":\"Hourly API request limit exceeded. Please try again in the next hour.\",\"error\":true}",
-  "api.open-meteo.com: HTTP 429 {\"error\":true,\"reason\":\"Hourly API request limit exceeded. Please try again in the next hour.\"}",
-  "api.open-meteo.com: HTTP 429 {\"error\":true,\"reason\":\"Hourly API request limit exceeded. Please try again in the next hour.\"}"
- ]
+ "errors": []
 }
