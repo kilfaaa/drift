@@ -1,11 +1,13 @@
 {
- "at": "2026-11-21T09:41",
- "updates": [],
+ "at": "2026-11-21T10:07",
+ "updates": [
+  "poll_answer:-:"
+ ],
  "mode": "auto",
  "slot": "collect",
  "telegram": true,
  "vault": true,
- "worker": "ok, 0 обновл.",
+ "worker": "ok, 1 обновл.",
  "chat": true,
  "evenings": 13,
  "evenings_krasnaya": 14,
