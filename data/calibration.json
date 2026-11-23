@@ -1,39 +1,39 @@
 {
  "weights": {
-  "Open-Meteo": 1.6,
-  "ECMWF": 1.63,
-  "ECMWF AIFS": 1.58,
-  "ICON": 1.63,
-  "ICON-EU": 1.63,
+  "Open-Meteo": 1.58,
+  "ECMWF": 1.6,
+  "ECMWF AIFS": 1.52,
+  "ICON": 1.6,
+  "ICON-EU": 1.6,
   "GFS": 1.58,
-  "UKMO": 1.55,
+  "UKMO": 1.58,
   "GEM": 1.36
  },
  "models": {
   "Open-Meteo": {
    "n": 366,
-   "acc": 0.858,
-   "bs": 0.1421
-  },
-  "ECMWF": {
-   "n": 366,
-   "acc": 0.926,
-   "bs": 0.0738
-  },
-  "ECMWF AIFS": {
-   "n": 366,
    "acc": 0.855,
    "bs": 0.1448
   },
+  "ECMWF": {
+   "n": 366,
+   "acc": 0.921,
+   "bs": 0.0792
+  },
+  "ECMWF AIFS": {
+   "n": 366,
+   "acc": 0.85,
+   "bs": 0.1503
+  },
   "ICON": {
    "n": 366,
-   "acc": 0.861,
-   "bs": 0.1393
+   "acc": 0.858,
+   "bs": 0.1421
   },
   "ICON-EU": {
    "n": 366,
-   "acc": 0.861,
-   "bs": 0.1393
+   "acc": 0.858,
+   "bs": 0.1421
   },
   "GFS": {
    "n": 366,
@@ -42,8 +42,8 @@
   },
   "UKMO": {
    "n": 366,
-   "acc": 0.852,
-   "bs": 0.1475
+   "acc": 0.855,
+   "bs": 0.1448
   },
   "GEM": {
    "n": 366,
@@ -52,10 +52,10 @@
   }
  },
  "base_rate": 0.284,
- "calibrated": "2026-11-16",
+ "calibrated": "2026-11-24",
  "period": [
-  "2025-11-09",
-  "2026-11-09"
+  "2025-11-17",
+  "2026-11-17"
  ],
  "journal": [
   {
@@ -213,12 +213,18 @@
    "pct": 50,
    "wet": false,
    "src": "era5"
+  },
+  {
+   "date": "2026-11-18",
+   "pct": 94,
+   "wet": false,
+   "src": "era5"
   }
  ],
  "verified": {
-  "n": 23,
+  "n": 24,
   "hits": 21,
-  "days": 26,
+  "days": 27,
   "spot": 1
  },
  "spots": {
@@ -407,12 +413,18 @@
      "pct": 39,
      "wet": false,
      "src": "era5"
+    },
+    {
+     "date": "2026-11-18",
+     "pct": 60,
+     "wet": false,
+     "src": "era5"
     }
    ],
    "verified": {
-    "n": 18,
+    "n": 19,
     "hits": 17,
-    "days": 21,
+    "days": 22,
     "spot": 0
    }
   },
@@ -541,61 +553,67 @@
      "pct": 41,
      "wet": false,
      "src": "era5"
+    },
+    {
+     "date": "2026-11-18",
+     "pct": 47,
+     "wet": false,
+     "src": "era5"
     }
    ],
    "verified": {
     "n": 9,
     "hits": 9,
-    "days": 11,
+    "days": 12,
     "spot": 0
    }
   },
   "stk": {
    "weights": {
-    "Open-Meteo": 1.62,
-    "ECMWF": 1.8,
-    "ECMWF AIFS": 1.67,
-    "ICON": 1.64,
-    "ICON-EU": 1.64,
-    "GFS": 1.69,
-    "UKMO": 1.59,
-    "GEM": 1.8
+    "Open-Meteo": 1.64,
+    "ECMWF": 1.79,
+    "ECMWF AIFS": 1.61,
+    "ICON": 1.66,
+    "ICON-EU": 1.66,
+    "GFS": 1.74,
+    "UKMO": 1.61,
+    "GEM": 1.79
    },
    "models": {
     "Open-Meteo": {
      "n": 366,
-     "acc": 0.852,
-     "bs": 0.1475
+     "acc": 0.855,
+     "bs": 0.1448
     },
     "ECMWF": {
      "n": 366,
-     "acc": 0.934,
-     "bs": 0.0656
+     "acc": 0.929,
+     "bs": 0.071
     },
     "ECMWF AIFS": {
+     "n": 366,
+     "acc": 0.852,
+     "bs": 0.1475
+    },
+    "ICON": {
      "n": 366,
      "acc": 0.858,
      "bs": 0.1421
     },
-    "ICON": {
-     "n": 366,
-     "acc": 0.855,
-     "bs": 0.1448
-    },
     "ICON-EU": {
      "n": 366,
-     "acc": 0.855,
-     "bs": 0.1448
+     "acc": 0.858,
+     "bs": 0.1421
     },
     "GFS": {
      "n": 366,
-     "acc": 0.861,
-     "bs": 0.1393
+     "acc": 0.866,
+     "bs": 0.1339
     },
     "UKMO": {
      "n": 366,
-     "acc": 0.85,
-     "bs": 0.1503
+     "acc": 0.852,
+     "bs": 0.1475
     },
     "GEM": {
      "n": 366,
@@ -603,11 +621,11 @@
      "bs": 0.1284
     }
    },
-   "base_rate": 0.309,
-   "calibrated": "2026-11-16",
+   "base_rate": 0.306,
+   "calibrated": "2026-11-24",
    "period": [
-    "2025-11-09",
-    "2026-11-09"
+    "2025-11-17",
+    "2026-11-17"
    ],
    "journal": [
     {
@@ -669,12 +687,18 @@
      "pct": 11,
      "wet": false,
      "src": "era5"
+    },
+    {
+     "date": "2026-11-18",
+     "pct": 62,
+     "wet": true,
+     "src": "era5"
     }
    ],
    "verified": {
-    "n": 9,
-    "hits": 9,
-    "days": 10,
+    "n": 10,
+    "hits": 10,
+    "days": 11,
     "spot": 0
    }
   }
