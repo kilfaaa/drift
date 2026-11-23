@@ -107,12 +107,17 @@
    "date": "2026-11-22",
    "kind": "truth",
    "spot": "medvedovka"
+  },
+  "5197472957206631669": {
+   "date": "2026-11-23",
+   "kind": "weather",
+   "spot": "medvedovka"
   }
  },
  "joke_n": 8,
  "joke_rot": 65,
  "joke_win": "2026-11-15-2",
- "fc_at": "2026-11-23T12:37+03:00",
+ "fc_at": "2026-11-23T13:37+03:00",
  "logged_spots": {
   "medvedovka": "2026-11-23",
   "krasnaya": "2026-11-23",
