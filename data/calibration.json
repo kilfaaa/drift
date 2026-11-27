@@ -59,6 +59,12 @@
  ],
  "journal": [
   {
+   "date": "2026-10-24",
+   "pct": 0,
+   "wet": false,
+   "src": "era5"
+  },
+  {
    "date": "2026-10-25",
    "pct": 0,
    "wet": false,
@@ -231,19 +237,13 @@
    "pct": 93,
    "wet": true,
    "src": "era5"
-  },
-  {
-   "date": "2026-11-27",
-   "pct": 86,
-   "wet": true,
-   "src": "spot"
   }
  ],
  "verified": {
-  "n": 28,
-  "hits": 25,
-  "days": 32,
-  "spot": 2
+  "n": 27,
+  "hits": 24,
+  "days": 31,
+  "spot": 1
  },
  "spots": {
   "krasnaya": {
